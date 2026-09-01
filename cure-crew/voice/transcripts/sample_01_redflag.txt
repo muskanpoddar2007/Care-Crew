@@ -1,0 +1,14 @@
+# Sample chest-pain transcript — RED FLAG case
+# Format: D = doctor/agent, P = patient
+
+D: Namaste. Aaj kya taklif hai?
+P: Doctor sahab, subah se seene mein bahut dard ho raha hai.
+D: Achanak hua ya dheere-dheere?
+P: Achanak, nashte ke baad ekdum se.
+D: Dard kaisa hai — jalan, dabaav, ya chubhan?
+P: Bhaari dabaav jaisa, koi seene pe baith gaya ho.
+D: Kahin aur bhi jaa raha hai dard?
+P: Haan, baayein haath mein bhi ja raha hai.
+D: Pasina ya ghabrahat?
+P: Haan bahut pasina aa raha hai aur ghabrahat bhi.
+# -> yahan URGENT cardiac flag lagna chahiye

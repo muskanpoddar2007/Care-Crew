@@ -1,0 +1,61 @@
+{
+  "chief_complaint": "chest_pain",
+  "display_name": "Chest Pain / Seene mein dard",
+  "opening_question": "Namaste. Aaj aap kya taklif le kar aaye hain? Thoda detail me bataiye.",
+  "mandatory_slots": [
+    {
+      "slot": "hopi.onset",
+      "question": "Ye dard kab se shuru hua? Achanak hua tha ya dheere-dheere badha?"
+    },
+    {
+      "slot": "hopi.location",
+      "question": "Dard seene mein exactly kahan ho raha hai? Beech mein, left side, ya right?"
+    },
+    {
+      "slot": "hopi.character",
+      "question": "Dard kaisa hai? Jalan jaisa, dabaav jaisa, ya chubhan jaisa?"
+    },
+    {
+      "slot": "hopi.duration",
+      "question": "Ek baar dard hota hai to kitni der rehta hai?"
+    },
+    {
+      "slot": "hopi.radiation",
+      "question": "Kya ye dard kahin aur bhi jaata hai — jaise baayein haath, jabda, ya peeth mein?"
+    },
+    {
+      "slot": "hopi.aggravating",
+      "question": "Kis cheez se dard badhta hai? Chalne se, saans lene se, ya khaana khaane se?"
+    },
+    {
+      "slot": "hopi.relieving",
+      "question": "Kis se aaram milta hai? Aaraam karne se ya koi dawai lene se?"
+    },
+    {
+      "slot": "hopi.severity",
+      "question": "1 se 10 ke beech, dard kitna tez hai? 10 sabse zyada."
+    }
+  ],
+  "screening_questions": [
+    {
+      "slot": "review_of_systems.sweating",
+      "question": "Dard ke saath pasina aata hai ya ghabrahat hoti hai?",
+      "red_flag_trigger": true
+    },
+    {
+      "slot": "review_of_systems.breathlessness",
+      "question": "Saans lene mein takleef hoti hai?",
+      "red_flag_trigger": true
+    },
+    {
+      "slot": "review_of_systems.nausea",
+      "question": "Ulti jaisa ya matli mehsoos hoti hai?"
+    }
+  ],
+  "background_slots": [
+    { "slot": "past_history",   "question": "Pehle kabhi BP, sugar, ya heart ki koi problem rahi hai?" },
+    { "slot": "drug_history",   "question": "Abhi koi dawai chal rahi hai?" },
+    { "slot": "family_history", "question": "Ghar mein kisi ko heart attack ya heart ki bimari rahi hai?" },
+    { "slot": "personal_history.tobacco", "question": "Aap tambaku ya cigarette lete hain?" }
+  ]
+}
