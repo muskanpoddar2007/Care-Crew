@@ -1,4 +1,4 @@
-"""App configuration. Sab secrets .env se aate hain — kabhi hardcode mat karo."""
+"""App configuration. Sab secrets .env se aate hain  kabhi hardcode mat karo."""
 import os
 from pydantic_settings import BaseSettings
 
@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://localhost:5432/curecrew"
 
     # LLM keys — .env se
-    GEMINI_API_KEY: str = ""
-    GROQ_API_KEY: str = ""
+    GEMINI_API_KEY: str = "AQ.Ab8RN6L7X5tUvY5MHblC910WQf3HG2FkckllCTuCl0pKWupgig"
+    GROQ_API_KEY: str = "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"
     SARVAM_API_KEY: str = ""
 
     # Session

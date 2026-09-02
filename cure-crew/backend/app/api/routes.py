@@ -44,3 +44,13 @@ def get_casesheet(session_id: str):
     if sheet is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return sheet.model_dump()
+
+
+@router.get("/session/{session_id}/final")
+def get_final_casesheet(session_id: str):
+    try:
+        return conversation.get_final_case_sheet(session_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=409, detail=str(e))

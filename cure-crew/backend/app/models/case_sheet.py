@@ -57,6 +57,7 @@ class CaseSheet(BaseModel):
     red_flags: list[str] = PydField(default_factory=list)
     is_urgent: bool = False
     is_complete: bool = False
+    turn_count: int = 0
 
     def missing_hopi_slots(self) -> list[str]:
         """Kaunse HOPI slots abhi khaali hain — slot-filling loop isko use karta hai."""
