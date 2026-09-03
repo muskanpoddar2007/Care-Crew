@@ -19,6 +19,10 @@
     viewLogin: document.getElementById("view-login"),
     viewDoctor: document.getElementById("view-doctor"),
     viewPatient: document.getElementById("view-patient"),
+    viewChat: document.getElementById("view-chat"),
+
+    startCaseBtn: document.getElementById("start-case-btn"),
+    chatBack: document.getElementById("chat-back"),
 
     backToRoles: document.getElementById("back-to-roles"),
     authTitle: document.getElementById("auth-title"),
@@ -39,7 +43,7 @@
 
   // ---------- View switching ----------
   function showView(view) {
-    [els.viewRoleSelect, els.viewLogin, els.viewDoctor, els.viewPatient].forEach((v) =>
+    [els.viewRoleSelect, els.viewLogin, els.viewDoctor, els.viewPatient, els.viewChat].forEach((v) =>
       v.classList.add("hidden")
     );
     view.classList.remove("hidden");
@@ -241,6 +245,13 @@
   });
 
   els.themeToggle.addEventListener("click", () => window.CareCrewTheme.toggleTheme());
+
+  els.startCaseBtn.addEventListener("click", () => {
+    showView(els.viewChat);
+    window.CareCrewChat.start();
+  });
+
+  els.chatBack.addEventListener("click", () => showView(els.viewPatient));
 
   els.logoutBtn.addEventListener("click", () => {
     clearSession();

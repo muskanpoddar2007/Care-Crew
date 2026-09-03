@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Prescription module uploaded files
+cure-crew/backend/uploads/*
+!cure-crew/backend/uploads/.gitkeep

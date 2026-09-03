@@ -42,4 +42,18 @@ const CareCrewAPI = {
   me(token) {
     return apiRequest("/api/auth/me", { token });
   },
+
+  // Case-taking (chest_pain triage) — app/api/routes.py, no auth required.
+  startCase(complaint = "chest_pain") {
+    return apiRequest("/api/session/start", { method: "POST", body: { complaint } });
+  },
+  sendCaseTurn({ session_id, patient_text, asked_slot, complaint = "chest_pain" }) {
+    return apiRequest("/api/session/turn", {
+      method: "POST",
+      body: { session_id, patient_text, asked_slot, complaint },
+    });
+  },
+  getFinalCaseSheet(session_id) {
+    return apiRequest(`/api/session/${session_id}/final`);
+  },
 };

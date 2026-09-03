@@ -154,6 +154,7 @@
             <div class="flat-card">
               <h3 style="margin-top:0;">You're logged in</h3>
               <p style="color:var(--color-text-muted);">Open the <strong>Profile</strong> tab to view your ID card.</p>
+              <button type="button" id="start-case-btn" class="btn-primary btn-inline">Start Symptom Check</button>
             </div>
           </div>
 
@@ -173,11 +174,47 @@
         </div>
       </section>
 
+      <!-- Case-taking chat -->
+      <section id="view-chat" class="view hidden">
+        <button type="button" id="chat-back" class="back-link">&larr; Back to dashboard</button>
+
+        <div id="urgent-banner" class="urgent-banner hidden" role="alert">
+          <span class="urgent-banner-icon" aria-hidden="true">⚠️</span>
+          <div>
+            <strong>RED FLAG — this may need urgent attention</strong>
+            <ul id="urgent-banner-flags"></ul>
+          </div>
+        </div>
+
+        <div class="chat-layout">
+          <div class="chat-panel flat-card">
+            <div id="chat-messages" class="chat-messages"></div>
+
+            <form id="chat-form" class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="Type your answer..." autocomplete="off" />
+              <button type="submit" id="chat-send" class="btn-primary btn-inline">Send</button>
+            </form>
+            <div id="chat-error" class="form-error hidden"></div>
+          </div>
+
+          <aside class="casesheet-panel flat-card">
+            <h3>Case Sheet</h3>
+            <div id="casesheet-live" class="casesheet-body"></div>
+          </aside>
+        </div>
+
+        <div id="chat-final" class="flat-card hidden">
+          <h3>Final Case Summary</h3>
+          <div id="casesheet-final" class="casesheet-body"></div>
+        </div>
+      </section>
+
     </main>
   </div>
 
   <script src="js/theme.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
