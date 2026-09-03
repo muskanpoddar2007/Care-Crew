@@ -31,6 +31,9 @@ def register(payload: UserRegister):
         phone=payload.phone,
         hashed_password=hash_password(payload.password),
         role=payload.role,
+        department=payload.department,
+        specialty=payload.specialty,
+        photo_url=payload.photo_url,
     )
     user_store.save(user.id, user)
 

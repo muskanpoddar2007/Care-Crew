@@ -24,6 +24,9 @@ class User(BaseModel):
     phone: Optional[str] = None
     hashed_password: str
     role: UserRole = UserRole.patient
+    department: Optional[str] = None    # doctor only
+    specialty: Optional[str] = None     # doctor only
+    photo_url: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -35,6 +38,9 @@ class UserPublic(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     role: UserRole
+    department: Optional[str] = None
+    specialty: Optional[str] = None
+    photo_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -45,6 +51,9 @@ class UserRegister(BaseModel):
     phone: Optional[str] = None
     password: str = Field(min_length=6)
     role: UserRole = UserRole.patient
+    department: Optional[str] = None
+    specialty: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class UserLogin(BaseModel):
