@@ -578,9 +578,8 @@ button {
 .casesheet-body .cs-group { margin-bottom: 18px; }
 
 .casesheet-body .cs-group h4 {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--color-text-muted);
   margin: 0 0 8px;
 }
