@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareCrew</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Splash screen -->
+  <div id="splash" class="splash">
+    <img id="splash-logo" class="splash-logo" src="assets/logo.png" alt="CareCrew logo" />
+  </div>
+
+  <!-- App shell -->
+  <div id="app" class="app hidden">
+    <header class="app-header">
+      <div class="brand">
+        <img id="header-logo" class="header-logo" src="assets/logo.png" alt="CareCrew" />
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+        <div id="user-chip" class="user-chip hidden">
+          <span id="user-chip-name"></span>
+          <button id="logout-btn" class="btn-link">Log out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- Role select -->
+      <section id="view-role-select" class="view">
+        <div class="hero">
+          <h1>Welcome to CareCrew</h1>
+          <p>Please choose how you'd like to sign in.</p>
+        </div>
+        <div class="role-cards">
+          <div class="role-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h2>Patient</h2>
+            <button type="button" data-role="patient" class="role-select-btn">Login as Patient</button>
+          </div>
+          <div class="role-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2v6a2 2 0 0 0 2 2h6"/><path d="M20 12v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9l5 5"/><path d="M9.5 14.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/></svg>
+            </div>
+            <h2>Doctor</h2>
+            <button type="button" data-role="doctor" class="role-select-btn">Login as Doctor</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Login / Register -->
+      <section id="view-login" class="view hidden">
+        <button type="button" id="back-to-roles" class="back-link">&larr; Back</button>
+        <div class="auth-card">
+          <h2 id="auth-title">Patient Login</h2>
+          <p class="auth-subtitle" id="auth-subtitle">Sign in with your email and password.</p>
+
+          <div id="form-error" class="form-error hidden"></div>
+
+          <form id="auth-form">
+            <div class="field register-only hidden">
+              <label for="field-name">Full name</label>
+              <input type="text" id="field-name" autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="field-email">Email</label>
+              <input type="email" id="field-email" autocomplete="username" required />
+            </div>
+            <div class="field">
+              <label for="field-password">Password</label>
+              <input type="password" id="field-password" autocomplete="current-password" required minlength="6" />
+            </div>
+            <div class="field register-only hidden">
+              <label for="field-phone">Phone (optional)</label>
+              <input type="tel" id="field-phone" autocomplete="tel" />
+            </div>
+            <div class="field register-only hidden doctor-only">
+              <label for="field-department">Department</label>
+              <input type="text" id="field-department" placeholder="e.g. Cardiology" />
+            </div>
+            <div class="field register-only hidden doctor-only">
+              <label for="field-specialty">Specialty</label>
+              <input type="text" id="field-specialty" placeholder="e.g. Interventional Cardiologist" />
+            </div>
+
+            <button type="submit" id="auth-submit" class="btn-primary">Log in</button>
+          </form>
+
+          <p class="auth-footer">
+            <span id="auth-toggle-text">New here?</span>
+            <button type="button" id="auth-toggle-mode" class="btn-link">Create an account</button>
+          </p>
+        </div>
+      </section>
+
+      <!-- Doctor dashboard -->
+      <section id="view-doctor" class="view hidden">
+        <div class="neumorphic-scope">
+          <div class="dash-header">
+            <h1 id="doctor-welcome">Welcome back</h1>
+            <p>Here's your CareCrew dashboard.</p>
+          </div>
+          <div class="tabs">
+            <button type="button" class="neu-btn active" data-tab="overview" data-scope="doctor">Overview</button>
+            <button type="button" class="neu-btn" data-tab="profile" data-scope="doctor">Profile</button>
+          </div>
+
+          <div id="doctor-tab-overview" class="tab-panel">
+            <div class="neu-card">
+              <h3 style="margin-top:0;">You're logged in</h3>
+              <p style="color:var(--color-text-muted);">Open the <strong>Profile</strong> tab to view your full ID card.</p>
+            </div>
+          </div>
+
+          <div id="doctor-tab-profile" class="tab-panel hidden">
+            <div class="neu-card id-card">
+              <div id="doctor-avatar" class="avatar"></div>
+              <h2 id="doctor-name"></h2>
+              <span class="role-badge">Doctor</span>
+              <dl class="id-fields">
+                <div class="field-row"><dt>Doctor ID</dt><dd id="doctor-id"></dd></div>
+                <div class="field-row"><dt>Department</dt><dd id="doctor-department"></dd></div>
+                <div class="field-row"><dt>Specialty</dt><dd id="doctor-specialty"></dd></div>
+                <div class="field-row"><dt>Email</dt><dd id="doctor-email"></dd></div>
+                <div class="field-row"><dt>Phone</dt><dd id="doctor-phone"></dd></div>
+                <div class="field-row"><dt>Member since</dt><dd id="doctor-since"></dd></div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Patient dashboard -->
+      <section id="view-patient" class="view hidden">
+        <div class="patient-scope">
+          <div class="dash-header">
+            <h1 id="patient-welcome">Welcome</h1>
+            <p>Here's your CareCrew dashboard.</p>
+          </div>
+          <div class="tabs">
+            <button type="button" class="neu-btn active" data-tab="overview" data-scope="patient">Overview</button>
+            <button type="button" class="neu-btn" data-tab="profile" data-scope="patient">Profile</button>
+          </div>
+
+          <div id="patient-tab-overview" class="tab-panel">
+            <div class="flat-card">
+              <h3 style="margin-top:0;">You're logged in</h3>
+              <p style="color:var(--color-text-muted);">Open the <strong>Profile</strong> tab to view your ID card.</p>
+            </div>
+          </div>
+
+          <div id="patient-tab-profile" class="tab-panel hidden">
+            <div class="flat-card id-card">
+              <div id="patient-avatar" class="avatar"></div>
+              <h2 id="patient-name"></h2>
+              <span class="role-badge">Patient</span>
+              <dl class="id-fields">
+                <div class="field-row"><dt>Patient ID</dt><dd id="patient-id"></dd></div>
+                <div class="field-row"><dt>Email</dt><dd id="patient-email"></dd></div>
+                <div class="field-row"><dt>Phone</dt><dd id="patient-phone"></dd></div>
+                <div class="field-row"><dt>Member since</dt><dd id="patient-since"></dd></div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
