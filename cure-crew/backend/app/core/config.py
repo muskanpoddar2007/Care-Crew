@@ -19,6 +19,16 @@ class Settings(BaseSettings):
     # Session
     SESSION_TTL_SECONDS: int = 3600
 
+    # Auth — prescription module. Override JWT_SECRET_KEY in .env for anything
+    # beyond local dev.
+    JWT_SECRET_KEY: str = "dev-secret-change-me-in-.env"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 1440
+
+    # File uploads — prescription module
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE_MB: int = 10
+
     class Config:
         env_file = ".env"
         extra = "ignore"
