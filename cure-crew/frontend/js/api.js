@@ -1,6 +1,7 @@
-// Thin wrapper around the backend's /api/auth routes.
-// Change API_BASE if the backend isn't running on the default local port.
-const API_BASE = "http://localhost:8000";
+// Thin wrapper around the backend's /api/auth and /api/session routes.
+// API_BASE comes from js/config.js (loaded before this file) — that's the
+// one place to change for a different backend URL (e.g. after deploying).
+const API_BASE = window.CARECREW_API_BASE || "http://localhost:8000";
 
 async function apiRequest(path, { method = "GET", body, token } = {}) {
   const headers = { "Content-Type": "application/json" };

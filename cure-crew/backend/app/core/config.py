@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     MAX_UPLOAD_SIZE_MB: int = 10
 
+    # CORS — comma-separated origins, or "*" for all. Set to the deployed
+    # frontend URL in production; "*" is fine for local dev / a Bearer-token
+    # API (no cookies involved).
+    CORS_ALLOWED_ORIGINS: str = "*"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

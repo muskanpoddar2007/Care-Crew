@@ -22,10 +22,16 @@ app = FastAPI(title=settings.APP_NAME)
 Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
-# Frontend ko allow karo (dev me sab allow, prod me specific domain daalna)
+# Frontend ko allow karo. CORS_ALLOWED_ORIGINS="*" (default) sab allow karta hai;
+# comma-separated origins doge (e.g. the deployed frontend URL) to sirf wahi allowed honge.
+_cors_origins = (
+    ["*"]
+    if settings.CORS_ALLOWED_ORIGINS.strip() == "*"
+    else [o.strip() for o in settings.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
