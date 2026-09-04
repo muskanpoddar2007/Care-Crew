@@ -55,3 +55,16 @@ def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depends(_be
     if user is None:
         raise unauthorized
     return user
+
+
+def get_current_user_optional(creds: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)) -> Optional[User]:
+    """Same as get_current_user but returns None instead of raising — for routes
+    (case-taking chat) that work anonymously but link the session to an account
+    when the patient happens to be logged in."""
+    if creds is None:
+        return None
+    try:
+        user_id = decode_access_token(creds.credentials)
+    except JWTError:
+        return None
+    return user_store.get(user_id)

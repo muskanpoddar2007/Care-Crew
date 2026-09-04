@@ -1,12 +1,40 @@
 import logging
 import uuid
-from typing import Dict, Any
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional
 
 from app.models.case_sheet import CaseSheet, Evidence
 from app.core import session_store
-from app.services import question_tree, extraction, red_flags
+from app.services import question_tree, extraction, red_flags, intent, dynamic_questions
+from app.services.reports_store import case_report_store
 
 logger = logging.getLogger("cure_crew.orchestration")
+
+_GENERIC_OPENER = (
+    "Namaste. Main samajhna chahta hoon aap kaisa mehsoos kar rahe hain — jab tayyar ho, "
+    "bataiye aapko kya taklif ho rahi hai. Main dhyan se sun raha hoon."
+)
+
+_ACK_POOL = [
+    "Samajh gaya, ye sunke thoda takleef hui hogi.",
+    "Theek hai, main samajh sakta hoon.",
+    "Aapne sahi bataya, shukriya batane ke liye.",
+    "Achha, ye jaanna zaroori tha.",
+    "I understand, that sounds uncomfortable.",
+    "Thank you for sharing that — that helps.",
+]
+
+_REPHRASE_PREFIXES = [
+    "Maaf kijiye, mujhe thoda samajh nahi aaya — ",
+    "Sorry, ek baar phir se poochta hoon — ",
+    "Koi baat nahi, thoda alag tarike se poochta hoon — ",
+]
+
+# Pure filler/non-answers only — NOT "haan"/"nahi", which are legitimate
+# yes/no answers to review-of-systems screening questions.
+_FILLERS = {"ok", "okay", "k", "hmm", "hm", "..", "...", "?", "acha", "achha"}
+
+_MAX_MISSES = 2
 
 
 def _get_flag_id(flag: Any) -> Any:
@@ -16,6 +44,18 @@ def _get_flag_id(flag: Any) -> Any:
     if isinstance(flag, dict) and "id" in flag:
         return flag["id"]
     return flag
+
+
+def _is_low_signal(text: str) -> bool:
+    """Filler/non-answers we can catch deterministically without an LLM call —
+    e.g. 'hmm', '?'. Deliberately does NOT flag short-but-meaningful answers
+    like a single digit ('7' for severity) or 'ha'/'na'. Real semantic-mismatch
+    detection (patient answers a well-formed but unrelated sentence) is
+    extraction.py's job via Gemini."""
+    t = (text or "").strip().lower()
+    if not t:
+        return True
+    return t in _FILLERS
 
 
 def _set_slot(sheet: CaseSheet, slot: str, patch: dict, turn_index: int) -> bool:
@@ -35,24 +75,22 @@ def _set_slot(sheet: CaseSheet, slot: str, patch: dict, turn_index: int) -> bool
         if len(parts) == 1:
             attr = getattr(sheet, parts[0])
             if isinstance(attr, list):
-                # These list fields (past_history, drug_history, ...) are typed list[str]
                 attr.append(value)
             else:
                 setattr(sheet, parts[0], ev)
-                
+
         elif len(parts) == 2:
             parent, child = parts
             obj = getattr(sheet, parent)
-            
+
             if isinstance(obj, dict):
-                # Dictionaries require serialized data, not Pydantic objects
                 obj[child] = ev.model_dump()
             else:
                 setattr(obj, child, ev)
         else:
             logger.warning(f"Unsupported nested slot depth: {slot}")
             return False
-            
+
     except AttributeError:
         logger.warning(f"Unknown slot or invalid schema path: {slot}")
         return False
@@ -60,73 +98,239 @@ def _set_slot(sheet: CaseSheet, slot: str, patch: dict, turn_index: int) -> bool
     return True
 
 
-def start_session(complaint: str) -> Dict[str, Any]:
-    """Initializes a new diagnostic session and saves the chief complaint."""
-    session_id = str(uuid.uuid4())[:8]
-    
-    # Store the complaint IN the sheet so the frontend doesn't have to remember it
-    sheet = CaseSheet(
-        session_id=session_id,
-        chief_complaint=Evidence(value=complaint),
-        turn_count=0
+def _force_not_recorded(sheet: CaseSheet, slot: str, turn_index: int) -> None:
+    """After two misses on the same slot, stop looping — record it as skipped
+    and let the flow move on."""
+    _set_slot(sheet, slot, {"value": "Not recorded", "evidence": None}, turn_index)
+    sheet.retry_counts.pop(slot, None)
+
+
+def _next_question(sheet: CaseSheet) -> Optional[dict]:
+    """Single source of truth for 'what should be asked next' — used both to
+    advance the flow AND to re-fetch the currently-pending question (since the
+    still-unfilled asked_slot is always the earliest unfilled slot in order)."""
+    if sheet.condition_key is None:
+        return {"slot": "chief_complaint", "question": _GENERIC_OPENER}
+    if sheet.tree_source == "predefined":
+        tree = question_tree.load_tree(sheet.condition_key)
+        return question_tree.next_question(sheet, tree)
+    return dynamic_questions.next_dynamic_question(sheet)
+
+
+def _apply_red_flags(sheet: CaseSheet) -> list:
+    new_flags = red_flags.evaluate(sheet)
+    existing_ids = {_get_flag_id(f) for f in sheet.red_flags}
+    fresh = [f for f in new_flags if _get_flag_id(f) not in existing_ids]
+    if fresh:
+        sheet.red_flags.extend(fresh)
+        sheet.is_urgent = True
+        logger.warning(f"session={sheet.session_id} new_red_flags={fresh}")
+    return fresh
+
+
+def _maybe_persist_report(sheet: CaseSheet) -> None:
+    """Once a session completes for a logged-in patient, keep a permanent copy
+    so it survives the live session's TTL and shows up under their Reports tab."""
+    if sheet.is_complete and sheet.patient_id:
+        sheet.completed_at = datetime.now(timezone.utc)
+        case_report_store.save(sheet.session_id, sheet)
+
+
+def _acknowledge(sheet: CaseSheet) -> str:
+    return _ACK_POOL[sheet.turn_count % len(_ACK_POOL)]
+
+
+def _rephrase(sheet: CaseSheet, question_text: str) -> str:
+    prefix = _REPHRASE_PREFIXES[sheet.turn_count % len(_REPHRASE_PREFIXES)]
+    return f"{prefix}{question_text}"
+
+
+def _clarify_prompt() -> str:
+    return (
+        "Main aapki poori tarah madad karna chahta hoon — kya aap thoda aur bata sakte hain? "
+        "Jaise, koi taklif/symptom ho raha hai, ya aap appointment book karna ya reports dekhna chahte hain?"
     )
-    
-    tree = question_tree.load_tree(complaint)
-    session_store.save(sheet)
-    
+
+
+def _completion_message() -> str:
+    return "Shukriya — maine sab kuch note kar liya hai. Ab doctor aapka case sheet review karenge."
+
+
+def _response(
+    sheet: CaseSheet,
+    next_question: Optional[str],
+    next_slot: Optional[str],
+    extraction_succeeded: bool,
+    new_flags: list,
+    action: Optional[dict],
+) -> Dict[str, Any]:
     return {
-        "session_id": session_id,
-        "next_question": tree.get("opening_question"),
-        "next_slot": "chief_complaint",
-        "is_urgent": False,
-        "is_complete": False,
+        "session_id": sheet.session_id,
+        "next_question": next_question,
+        "next_slot": next_slot,
+        "extraction_succeeded": extraction_succeeded,
+        "is_urgent": sheet.is_urgent,
+        "new_red_flags": new_flags,
+        "is_complete": sheet.is_complete,
+        "state": sheet.model_dump(),
+        "action": action,
+        "condition_key": sheet.condition_key,
+        "department": sheet.department,
     }
 
 
-def process_turn(session_id: str, patient_text: str, asked_slot: str, complaint: str = "chest_pain") -> Dict[str, Any]:
+def start_session(complaint: str = None, patient_id: str = None) -> Dict[str, Any]:
+    """Initializes a new diagnostic session.
+
+    complaint=None (default, used by the chat UI) -> generic warm opener; the
+    condition is picked from the patient's own first message via intent
+    detection.
+    complaint="chest_pain" etc. (legacy — used by run_extraction_test.py) ->
+    skips intent detection and goes straight into that tree, exactly like
+    before.
+    """
+    session_id = str(uuid.uuid4())[:8]
+    sheet = CaseSheet(session_id=session_id, turn_count=0, patient_id=patient_id)
+
+    if complaint:
+        sheet.condition_key = complaint
+        sheet.department = intent.CONDITIONS.get(complaint, {}).get("department")
+        sheet.tree_source = "predefined" if question_tree.has_tree(complaint) else "dynamic"
+
+    session_store.save(sheet)
+
+    return {
+        "session_id": session_id,
+        "next_question": _GENERIC_OPENER if not complaint else question_tree.load_tree(complaint).get("opening_question"),
+        "next_slot": "chief_complaint",
+        "is_urgent": False,
+        "is_complete": False,
+        "action": None,
+        "condition_key": sheet.condition_key,
+        "department": sheet.department,
+    }
+
+
+def process_turn(
+    session_id: str,
+    patient_text: str,
+    asked_slot: str,
+    complaint: str = None,   # unused — kept for backward-compatible call signatures
+    patient_id: str = None,
+) -> Dict[str, Any]:
     """Processes a single conversational turn."""
     sheet = session_store.load(session_id)
     if sheet is None:
         raise ValueError(f"Session {session_id} expired or not found")
 
-    # 1. Load tree using the complaint type passed by the caller (sheet.chief_complaint
-    # holds the patient's actual answer text, not the tree key, once that slot is answered)
-    tree = question_tree.load_tree(complaint)
-
-    # 2. Increment turn counter
     sheet.turn_count += 1
-    
-    # 3. Extract & Merge
-    patch = extraction.extract(asked_slot, patient_text)
-    extraction_succeeded = _set_slot(sheet, asked_slot, patch, sheet.turn_count)
+    turn_index = sheet.turn_count
 
-    # 4. Evaluate & Deduplicate Red Flags
-    new_flags = red_flags.evaluate(sheet)
-    
-    existing_flag_ids = {_get_flag_id(f) for f in sheet.red_flags}
-    fresh_flags = [f for f in new_flags if _get_flag_id(f) not in existing_flag_ids]
-    
-    if fresh_flags:
-        sheet.red_flags.extend(fresh_flags)
-        sheet.is_urgent = True
-        logger.warning(f"session={session_id} new_red_flags={fresh_flags}")
+    if patient_id and not sheet.patient_id:
+        sheet.patient_id = patient_id
 
-    # 5. Determine Next Question
-    nxt = question_tree.next_question(sheet, tree)
+    # 1. Action intent — checked on every turn, before anything else. Never
+    #    corrupts slot-filling state: the pending question is simply re-shown.
+    action = intent.detect_action(patient_text)
+    if action:
+        session_store.save(sheet)
+        pending = _next_question(sheet)
+        ack = f"Bilkul, main aapki madad karta hoon — neeche '{action['label']}' button dabaiye."
+        if pending:
+            ack += f" Jab ready ho, hum yahin se continue karenge: {pending['question']}"
+        return _response(
+            sheet,
+            next_question=ack,
+            next_slot=(pending["slot"] if pending else asked_slot),
+            extraction_succeeded=False,
+            new_flags=[],
+            action=action,
+        )
+
+    # 2. First message — chief_complaint not yet captured. Classify condition
+    #    (unless start_session already pinned one, in the legacy call path).
+    if sheet.chief_complaint.value in (None, ""):
+        if sheet.condition_key is None:
+            intent_type = intent.classify_intent(patient_text)
+            if intent_type == "unclear":
+                session_store.save(sheet)
+                return _response(
+                    sheet,
+                    next_question=_clarify_prompt(),
+                    next_slot="chief_complaint",
+                    extraction_succeeded=False,
+                    new_flags=[],
+                    action=None,
+                )
+            classification = intent.classify_condition(patient_text)
+            sheet.condition_key = classification["condition_key"]
+            sheet.department = classification["department"]
+            sheet.tree_source = "predefined" if classification["has_tree"] else "dynamic"
+
+        patch = extraction.extract("chief_complaint", patient_text)
+        _set_slot(sheet, "chief_complaint", patch, turn_index)
+
+        new_flags = _apply_red_flags(sheet)
+        nxt = _next_question(sheet)
+        sheet.is_complete = nxt is None
+        _maybe_persist_report(sheet)
+        session_store.save(sheet)
+
+        next_q = f"{_acknowledge(sheet)} {nxt['question']}" if nxt else _completion_message()
+        return _response(
+            sheet,
+            next_question=next_q,
+            next_slot=(nxt["slot"] if nxt else None),
+            extraction_succeeded=True,
+            new_flags=new_flags,
+            action=None,
+        )
+
+    # 3. Mid-tree — this message answers `asked_slot`.
+    if _is_low_signal(patient_text):
+        patch = {"value": None, "evidence": None}
+    else:
+        patch = extraction.extract(asked_slot, patient_text)
+    success = _set_slot(sheet, asked_slot, patch, turn_index)
+
+    if success:
+        sheet.retry_counts.pop(asked_slot, None)
+    else:
+        miss_count = sheet.retry_counts.get(asked_slot, 0) + 1
+        sheet.retry_counts[asked_slot] = miss_count
+
+        if miss_count < _MAX_MISSES:
+            new_flags = _apply_red_flags(sheet)
+            pending = _next_question(sheet)  # same slot again — still unfilled
+            session_store.save(sheet)
+            return _response(
+                sheet,
+                next_question=_rephrase(sheet, pending["question"]) if pending else _completion_message(),
+                next_slot=(pending["slot"] if pending else None),
+                extraction_succeeded=False,
+                new_flags=new_flags,
+                action=None,
+            )
+
+        # Two misses — stop looping, record as skipped, and move on.
+        _force_not_recorded(sheet, asked_slot, turn_index)
+        success = True
+
+    new_flags = _apply_red_flags(sheet)
+    nxt = _next_question(sheet)
     sheet.is_complete = nxt is None
-    
+    _maybe_persist_report(sheet)
     session_store.save(sheet)
 
-    return {
-        "session_id": session_id,
-        "next_question": nxt["question"] if nxt else None,
-        "next_slot": nxt["slot"] if nxt else None,
-        "extraction_succeeded": extraction_succeeded,
-        "is_urgent": sheet.is_urgent,
-        "new_red_flags": fresh_flags,
-        "is_complete": sheet.is_complete,
-        "state": sheet.model_dump(),
-    }
+    next_q = f"{_acknowledge(sheet)} {nxt['question']}" if nxt else _completion_message()
+    return _response(
+        sheet,
+        next_question=next_q,
+        next_slot=(nxt["slot"] if nxt else None),
+        extraction_succeeded=success,
+        new_flags=new_flags,
+        action=None,
+    )
 
 
 def _flatten(node: Any) -> Any:

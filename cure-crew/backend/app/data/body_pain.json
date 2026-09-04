@@ -1,0 +1,21 @@
+{
+  "chief_complaint": "body_pain",
+  "display_name": "Body Pain / Badan Dard",
+  "opening_question": "Namaste. Badan dard ke baare mein bataiye — kahan aur kab se ho raha hai?",
+  "mandatory_slots": [
+    { "slot": "hopi.location", "question": "Dard shareer mein kahan hai — poore badan mein ya kisi khaas jagah?" },
+    { "slot": "hopi.onset", "question": "Ye dard kab se hai?" },
+    { "slot": "hopi.character", "question": "Dard kaisa hai — jakdan (stiffness), khinchav, ya tez dard?" },
+    { "slot": "hopi.severity", "question": "1 se 10 ke beech dard kitna tez hai?" },
+    { "slot": "hopi.aggravating", "question": "Kis cheez se dard badhta hai — movement se, ya aaram karne par bhi rehta hai?" }
+  ],
+  "screening_questions": [
+    { "slot": "review_of_systems.fever_with_it", "question": "Badan dard ke saath bukhaar bhi hai?" },
+    { "slot": "review_of_systems.weakness", "question": "Kamzori ya chalne-firne mein dikkat mehsoos hoti hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.swelling", "question": "Kisi joint ya jagah par sujan (swelling) hai?" }
+  ],
+  "background_slots": [
+    { "slot": "past_history", "question": "Pehle kabhi arthritis, thyroid, ya aisi koi bimari hui hai?" },
+    { "slot": "drug_history", "question": "Koi dawai already chal rahi hai?" }
+  ]
+}

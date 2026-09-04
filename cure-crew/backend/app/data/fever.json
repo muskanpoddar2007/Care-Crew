@@ -1,0 +1,21 @@
+{
+  "chief_complaint": "fever",
+  "display_name": "Fever / Bukhaar",
+  "opening_question": "Namaste. Bukhaar ke baare mein thoda aur bataiye — kab se mehsoos ho raha hai?",
+  "mandatory_slots": [
+    { "slot": "hopi.onset", "question": "Bukhaar kab se hai — aaj se, kal se, ya kai dinon se?" },
+    { "slot": "hopi.severity", "question": "Bukhaar kitna tez hai? Agar thermometer se naapa hai to kitna tha?" },
+    { "slot": "hopi.timing", "question": "Bukhaar lagatar rehta hai ya sham/raat ko badh jaata hai?" }
+  ],
+  "screening_questions": [
+    { "slot": "review_of_systems.chills", "question": "Bukhaar ke saath thand lagti hai ya kaanpna (shivering) hota hai?" },
+    { "slot": "review_of_systems.body_ache", "question": "Badan mein dard ya kamzori mehsoos hoti hai?" },
+    { "slot": "review_of_systems.rash", "question": "Shareer par koi rash ya laal daane dikhe hain?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.breathlessness", "question": "Saans lene mein takleef ho rahi hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.recent_travel", "question": "Pichle 2 hafton mein kahin bahar (dusre shehar/gaanv) gaye the?" }
+  ],
+  "background_slots": [
+    { "slot": "past_history", "question": "Pehle kabhi malaria, dengue, typhoid, ya aisi koi bimari hui hai?" },
+    { "slot": "drug_history", "question": "Bukhaar ke liye koi dawai already li hai?" }
+  ]
+}

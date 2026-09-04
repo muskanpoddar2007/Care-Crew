@@ -8,6 +8,7 @@ Har extracted field ek `Field` object hai jisme value + evidence (patient ka exa
 hota hai. Evidence linking hi hamara sabse bada differentiator hai.
 """
 from __future__ import annotations
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field as PydField
 from typing import Optional
 
@@ -58,6 +59,14 @@ class CaseSheet(BaseModel):
     is_urgent: bool = False
     is_complete: bool = False
     turn_count: int = 0
+
+    # --- Intent-aware triage additions (all additive — no existing field renamed) ---
+    condition_key: Optional[str] = None      # e.g. "fever", "stomach_pain" — picked after intent detection
+    department: Optional[str] = None         # inferred routing department, e.g. "Gastroenterology"
+    tree_source: Optional[str] = None        # "predefined" | "dynamic"
+    patient_id: Optional[str] = None         # set when the logged-in patient started the session
+    retry_counts: dict[str, int] = PydField(default_factory=dict)  # per-slot miss counter for re-asks
+    completed_at: Optional[datetime] = None  # set once is_complete flips true — used to sort Reports
 
     def missing_hopi_slots(self) -> list[str]:
         """Kaunse HOPI slots abhi khaali hain — slot-filling loop isko use karta hai."""

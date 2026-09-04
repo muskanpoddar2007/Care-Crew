@@ -17,6 +17,11 @@ def load_tree(complaint: str = "chest_pain") -> dict:
         return json.load(f)
 
 
+def has_tree(condition_key: str) -> bool:
+    """True if a predefined question tree JSON exists for this condition."""
+    return (_DATA_DIR / f"{condition_key}.json").exists()
+
+
 def _slot_filled(sheet: CaseSheet, slot: str) -> bool:
     """Dotted path (e.g. 'hopi.onset') dekh ke check karo bhara hai ya nahi."""
     obj = sheet.model_dump()
@@ -45,3 +50,8 @@ def next_question(sheet: CaseSheet, tree: dict) -> dict | None:
 
 def is_complete(sheet: CaseSheet, tree: dict) -> bool:
     return next_question(sheet, tree) is None
+
+
+# Public alias — app/services/dynamic_questions.py reuses this same
+# "is this dotted slot path already filled" check for the no-tree fallback.
+slot_filled = _slot_filled

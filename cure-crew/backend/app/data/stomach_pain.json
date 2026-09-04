@@ -1,0 +1,24 @@
+{
+  "chief_complaint": "stomach_pain",
+  "display_name": "Stomach / Abdominal Pain / Pet Dard",
+  "opening_question": "Namaste. Pet dard ke baare mein bataiye — exactly kahan dard ho raha hai?",
+  "mandatory_slots": [
+    { "slot": "hopi.location", "question": "Pet mein exactly kahan dard hai — upar, neeche, dayein, baayein, ya poore pet mein?" },
+    { "slot": "hopi.onset", "question": "Ye dard kab se hai?" },
+    { "slot": "hopi.severity", "question": "1 se 10 ke beech dard kitna tez hai?" },
+    { "slot": "hopi.timing", "question": "Dard lagatar rehta hai ya aata-jaata hai?" },
+    { "slot": "review_of_systems.related_to_food", "question": "Dard khaana khaane se pehle badhta hai ya baad mein?" },
+    { "slot": "review_of_systems.recent_food", "question": "Aajkal mein kuch bahar ka, baasi, ya alag khaya tha?" }
+  ],
+  "screening_questions": [
+    { "slot": "review_of_systems.vomiting", "question": "Ulti ho rahi hai?" },
+    { "slot": "review_of_systems.loose_motion", "question": "Loose motion ya dast ho rahe hain?" },
+    { "slot": "review_of_systems.blood_in_stool", "question": "Motion mein khoon dikha hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.blood_in_vomit", "question": "Ulti mein khoon aaya hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.fever_with_it", "question": "Iske saath bukhaar bhi hai?" }
+  ],
+  "background_slots": [
+    { "slot": "past_history", "question": "Pehle kabhi gastric, ulcer, gallstone, ya pet ki koi bimari hui hai?" },
+    { "slot": "drug_history", "question": "Koi painkiller ya dawai already li hai?" }
+  ]
+}

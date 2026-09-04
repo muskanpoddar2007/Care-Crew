@@ -15,6 +15,7 @@ from app.core import session_store
 from app.core.responses import AppError
 from app.api.routes import router
 from app.api.auth_routes import router as auth_router
+from app.api.patient_routes import router as patient_router
 from app.api.prescription_routes import router as prescription_router
 
 app = FastAPI(title=settings.APP_NAME)
@@ -47,6 +48,7 @@ async def app_error_handler(request: Request, exc: AppError):
 app.include_router(router)
 app.include_router(auth_router)
 app.include_router(prescription_router)
+app.include_router(patient_router)
 
 
 @app.get("/")

@@ -44,17 +44,36 @@ const CareCrewAPI = {
     return apiRequest("/api/auth/me", { token });
   },
 
-  // Case-taking (chest_pain triage) — app/api/routes.py, no auth required.
-  startCase(complaint = "chest_pain") {
-    return apiRequest("/api/session/start", { method: "POST", body: { complaint } });
+  // Case-taking — app/api/routes.py. No auth required, but an optional token
+  // links the session to the logged-in patient's account (for Reports later).
+  startCase(token) {
+    return apiRequest("/api/session/start", { method: "POST", body: {}, token });
   },
-  sendCaseTurn({ session_id, patient_text, asked_slot, complaint = "chest_pain" }) {
+  sendCaseTurn({ session_id, patient_text, asked_slot }, token) {
     return apiRequest("/api/session/turn", {
       method: "POST",
-      body: { session_id, patient_text, asked_slot, complaint },
+      body: { session_id, patient_text, asked_slot },
+      token,
     });
   },
   getFinalCaseSheet(session_id) {
     return apiRequest(`/api/session/${session_id}/final`);
+  },
+  getSessionSummary(session_id, audience = "patient") {
+    return apiRequest(`/api/session/${session_id}/summary?audience=${audience}`);
+  },
+
+  // Patient navigation-action destinations — app/api/patient_routes.py, auth required.
+  createAppointment(payload, token) {
+    return apiRequest("/api/patients/me/appointments", { method: "POST", body: payload, token });
+  },
+  listAppointments(token) {
+    return apiRequest("/api/patients/me/appointments", { token });
+  },
+  listReports(token) {
+    return apiRequest("/api/patients/me/reports", { token });
+  },
+  getReportSummary(session_id, audience, token) {
+    return apiRequest(`/api/patients/me/reports/${session_id}/summary?audience=${audience}`, { token });
   },
 };

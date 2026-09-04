@@ -1,12 +1,10 @@
-// Case-taking chat screen — wires the chest_pain triage endpoints
-// (POST /api/session/start, POST /api/session/turn, GET /api/session/{id}/final)
-// to a chat transcript + a live case-sheet panel.
+// Case-taking chat screen — intent-aware assistant. No hardcoded complaint:
+// the backend classifies the condition from the patient's own first message
+// (see POST /api/session/start, POST /api/session/turn in app/api/routes.py).
 (function () {
-  const COMPLAINT = "chest_pain";
-
-  // Ordered (slot, label) pairs — mirrors app/data/chest_pain.json's
-  // mandatory_slots / screening_questions / background_slots groups, so the
-  // case-sheet panel renders fields in the same order they're asked.
+  // Ordered (slot, label) pairs for the fields every tree tends to share —
+  // anything else (new ROS keys from fever/stomach_pain/etc. trees, or from
+  // the no-tree dynamic fallback) is auto-rendered under "Additional Details".
   const SLOT_GROUPS = [
     {
       title: "Shikayat / शिकायत",
@@ -17,7 +15,7 @@
       slots: [
         ["hopi.onset", "Kab se / कब से"],
         ["hopi.location", "Kahan / कहाँ"],
-        ["hopi.character", "Kaisa dard / कैसा दर्द"],
+        ["hopi.character", "Kaisa / कैसा"],
         ["hopi.duration", "Kitni der / कितनी देर"],
         ["hopi.radiation", "Kahin aur failta hai / कहीं और"],
         ["hopi.aggravating", "Kis se badhta hai / किससे बढ़ता है"],
@@ -45,10 +43,24 @@
     },
   ];
 
+  const KNOWN_ROS_KEYS = new Set(
+    SLOT_GROUPS.flatMap((g) =>
+      g.slots
+        .filter(([path]) => path.startsWith("review_of_systems."))
+        .map(([path]) => path.split(".")[1])
+    )
+  );
+
   const els = {};
   let sessionId = null;
   let currentSlot = null;
+  let lastDepartment = null;
+  let lastConditionKey = null;
   let busy = false;
+
+  function humanizeKey(key) {
+    return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
 
   function cacheEls() {
     els.banner = document.getElementById("urgent-banner");
@@ -61,6 +73,11 @@
     els.live = document.getElementById("casesheet-live");
     els.finalWrap = document.getElementById("chat-final");
     els.finalBody = document.getElementById("casesheet-final");
+    els.summaryPanel = document.getElementById("chat-summary");
+    els.summaryBody = document.getElementById("chat-summary-body");
+    els.summaryClose = document.getElementById("chat-summary-close");
+    els.summaryPatientBtn = document.getElementById("chat-summary-patient");
+    els.summaryDoctorBtn = document.getElementById("chat-summary-doctor");
   }
 
   function addMessage(role, text) {
@@ -69,6 +86,45 @@
     bubble.textContent = text;
     els.messages.appendChild(bubble);
     els.messages.scrollTop = els.messages.scrollHeight;
+    return bubble;
+  }
+
+  function addActionButton(action) {
+    const wrap = document.createElement("div");
+    wrap.className = "chat-action-wrap";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn-primary btn-inline chat-action-btn";
+    btn.textContent = action.label;
+    btn.addEventListener("click", () => handleAction(action));
+    wrap.appendChild(btn);
+    els.messages.appendChild(wrap);
+    els.messages.scrollTop = els.messages.scrollHeight;
+  }
+
+  function handleAction(action) {
+    if (action.target === "summary") {
+      openSummary();
+      return;
+    }
+    window.CareCrewNav.goTo(action.target, { department: lastDepartment, conditionKey: lastConditionKey });
+  }
+
+  async function openSummary() {
+    els.summaryPanel.classList.remove("hidden");
+    await loadSummary("patient");
+  }
+
+  async function loadSummary(audience) {
+    els.summaryPatientBtn.classList.toggle("active", audience === "patient");
+    els.summaryDoctorBtn.classList.toggle("active", audience === "doctor");
+    els.summaryBody.textContent = "Generating summary...";
+    try {
+      const res = await CareCrewAPI.getSessionSummary(sessionId, audience);
+      els.summaryBody.textContent = res.summary;
+    } catch (err) {
+      els.summaryBody.textContent = `Could not generate summary: ${err.message}`;
+    }
   }
 
   function getNested(obj, dottedPath) {
@@ -78,9 +134,6 @@
     );
   }
 
-  // A leaf is either an Evidence-shaped object ({value, evidence, turn_index} —
-  // from the live `state`), a plain flattened value (from the /final endpoint),
-  // or a list of plain strings (past_history etc).
   function renderLeaf(node) {
     if (node == null) return null;
     if (Array.isArray(node)) {
@@ -101,7 +154,6 @@
       }
       return dd;
     }
-    // plain scalar (from the flattened /final response)
     const dd = document.createElement("dd");
     dd.textContent = String(node);
     return dd;
@@ -138,6 +190,37 @@
         container.appendChild(groupEl);
       }
     });
+
+    // Additional Details — ROS fields introduced by a new tree, or by the
+    // dynamic no-tree fallback, that SLOT_GROUPS doesn't already cover.
+    const ros = data.review_of_systems || {};
+    const extraKeys = Object.keys(ros).filter((k) => !KNOWN_ROS_KEYS.has(k));
+    if (extraKeys.length) {
+      const groupEl = document.createElement("div");
+      groupEl.className = "cs-group";
+      const heading = document.createElement("h4");
+      heading.textContent = "Additional Details";
+      groupEl.appendChild(heading);
+
+      const dl = document.createElement("dl");
+      let groupHasFields = false;
+
+      extraKeys.forEach((k) => {
+        const dd = renderLeaf(ros[k]);
+        if (!dd) return;
+        groupHasFields = true;
+        any = true;
+        const dt = document.createElement("dt");
+        dt.textContent = humanizeKey(k);
+        dl.appendChild(dt);
+        dl.appendChild(dd);
+      });
+
+      if (groupHasFields) {
+        groupEl.appendChild(dl);
+        container.appendChild(groupEl);
+      }
+    }
 
     if (!any) {
       const empty = document.createElement("p");
@@ -182,6 +265,7 @@
     els.finalBody.innerHTML = "";
     els.finalWrap.classList.add("hidden");
     els.banner.classList.add("hidden");
+    els.summaryPanel.classList.add("hidden");
     clearError();
     els.form.classList.remove("hidden");
     renderCaseSheet(els.live, {});
@@ -192,10 +276,13 @@
     resetUI();
     sessionId = null;
     currentSlot = null;
+    lastDepartment = null;
+    lastConditionKey = null;
 
     setBusy(true);
     try {
-      const res = await CareCrewAPI.startCase(COMPLAINT);
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.startCase(token);
       sessionId = res.session_id;
       currentSlot = res.next_slot;
       addMessage("agent", res.next_question);
@@ -225,22 +312,29 @@
     setBusy(true);
 
     try {
-      const res = await CareCrewAPI.sendCaseTurn({
-        session_id: sessionId,
-        patient_text: text,
-        asked_slot: currentSlot,
-        complaint: COMPLAINT,
-      });
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.sendCaseTurn(
+        { session_id: sessionId, patient_text: text, asked_slot: currentSlot },
+        token
+      );
 
       renderCaseSheet(els.live, res.state);
       updateBanner(res.is_urgent, res.state ? res.state.red_flags : []);
       currentSlot = res.next_slot;
+      lastDepartment = res.department || lastDepartment;
+      lastConditionKey = res.condition_key || lastConditionKey;
 
       if (res.is_complete) {
-        addMessage("agent", "Thank you — I have everything I need. Preparing your case summary...");
+        addMessage("agent", res.next_question || "Thank you — I have everything I need. Preparing your case summary...");
         await finish();
       } else {
         addMessage("agent", res.next_question);
+      }
+
+      if (res.action) {
+        addActionButton(res.action);
+      } else if (res.is_urgent) {
+        addActionButton({ action: "navigate", target: "appointments", label: "Book Urgent Appointment" });
       }
     } catch (err) {
       showError(err.message);
@@ -260,7 +354,10 @@
       els.input.value = "";
       submitAnswer(text);
     });
+    els.summaryClose.addEventListener("click", () => els.summaryPanel.classList.add("hidden"));
+    els.summaryPatientBtn.addEventListener("click", () => loadSummary("patient"));
+    els.summaryDoctorBtn.addEventListener("click", () => loadSummary("doctor"));
   });
 
-  window.CareCrewChat = { start };
+  window.CareCrewChat = { start, renderCaseSheet };
 })();

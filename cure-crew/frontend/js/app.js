@@ -20,9 +20,34 @@
     viewDoctor: document.getElementById("view-doctor"),
     viewPatient: document.getElementById("view-patient"),
     viewChat: document.getElementById("view-chat"),
+    viewAppointments: document.getElementById("view-appointments"),
+    viewReports: document.getElementById("view-reports"),
 
     startCaseBtn: document.getElementById("start-case-btn"),
     chatBack: document.getElementById("chat-back"),
+
+    goAppointmentsBtn: document.getElementById("go-appointments-btn"),
+    goReportsBtn: document.getElementById("go-reports-btn"),
+    appointmentsBack: document.getElementById("appointments-back"),
+    reportsBack: document.getElementById("reports-back"),
+    appointmentForm: document.getElementById("appointment-form"),
+    appointmentsError: document.getElementById("appointments-error"),
+    apptDepartment: document.getElementById("appt-department"),
+    apptDate: document.getElementById("appt-date"),
+    apptNote: document.getElementById("appt-note"),
+    apptUrgent: document.getElementById("appt-urgent"),
+    apptSubmit: document.getElementById("appt-submit"),
+    appointmentsList: document.getElementById("appointments-list"),
+
+    reportsListWrap: document.getElementById("reports-list-wrap"),
+    reportsError: document.getElementById("reports-error"),
+    reportsList: document.getElementById("reports-list"),
+    reportDetail: document.getElementById("report-detail"),
+    reportDetailBack: document.getElementById("report-detail-back"),
+    reportDetailBody: document.getElementById("report-detail-body"),
+    reportSummaryPatientBtn: document.getElementById("report-summary-patient"),
+    reportSummaryDoctorBtn: document.getElementById("report-summary-doctor"),
+    reportSummaryBody: document.getElementById("report-summary-body"),
 
     backToRoles: document.getElementById("back-to-roles"),
     authTitle: document.getElementById("auth-title"),
@@ -42,10 +67,18 @@
   };
 
   // ---------- View switching ----------
+  const ALL_VIEWS = [
+    els.viewRoleSelect,
+    els.viewLogin,
+    els.viewDoctor,
+    els.viewPatient,
+    els.viewChat,
+    els.viewAppointments,
+    els.viewReports,
+  ];
+
   function showView(view) {
-    [els.viewRoleSelect, els.viewLogin, els.viewDoctor, els.viewPatient, els.viewChat].forEach((v) =>
-      v.classList.add("hidden")
-    );
+    ALL_VIEWS.forEach((v) => v.classList.add("hidden"));
     view.classList.remove("hidden");
   }
 
@@ -135,6 +168,19 @@
     localStorage.removeItem(SESSION_KEY);
   }
 
+  // Shared with chat.js (and any other module) so the auth token/user don't
+  // need their own copy of SESSION_KEY.
+  window.CareCrewSession = {
+    getToken() {
+      const s = loadSession();
+      return s ? s.token : null;
+    },
+    getUser() {
+      const s = loadSession();
+      return s ? s.user : null;
+    },
+  };
+
   function initials(name) {
     return (name || "?")
       .trim()
@@ -219,6 +265,139 @@
     }
   }
 
+  // ---------- Navigation actions (driven by chat.js's action buttons too) ----------
+  window.CareCrewNav = {
+    goTo(target, opts) {
+      opts = opts || {};
+      if (target === "appointments") {
+        openAppointments(opts.department);
+      } else if (target === "reports") {
+        openReports();
+      } else if (target === "patient") {
+        showView(els.viewPatient);
+      } else {
+        // Unknown target — fail safe back to the dashboard rather than a blank screen.
+        showView(els.viewPatient);
+      }
+    },
+  };
+
+  // ---------- Appointments ----------
+  function openAppointments(suggestedDepartment) {
+    els.appointmentsError.classList.add("hidden");
+    if (suggestedDepartment) {
+      const options = Array.from(els.apptDepartment.options).map((o) => o.value);
+      if (options.includes(suggestedDepartment)) {
+        els.apptDepartment.value = suggestedDepartment;
+      }
+    }
+    showView(els.viewAppointments);
+    loadAppointments();
+  }
+
+  function renderAppointments(list) {
+    els.appointmentsList.innerHTML = "";
+    if (!list.length) {
+      const p = document.createElement("p");
+      p.className = "list-empty";
+      p.textContent = "No appointments requested yet.";
+      els.appointmentsList.appendChild(p);
+      return;
+    }
+    list.forEach((a) => {
+      const row = document.createElement("div");
+      row.className = "list-item";
+      row.innerHTML = `
+        <div class="list-item-main">
+          <span class="list-item-title">${a.department}</span>
+          <span class="list-item-meta">${a.preferred_date || "No date given"} · ${a.status}${a.note ? " · " + a.note : ""}</span>
+        </div>
+        ${a.urgent ? '<span class="role-badge urgent">Urgent</span>' : ""}
+      `;
+      els.appointmentsList.appendChild(row);
+    });
+  }
+
+  async function loadAppointments() {
+    try {
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.listAppointments(token);
+      renderAppointments(res.data || []);
+    } catch (err) {
+      els.appointmentsError.textContent = err.message;
+      els.appointmentsError.classList.remove("hidden");
+    }
+  }
+
+  // ---------- Reports ----------
+  function openReports() {
+    els.reportsError.classList.add("hidden");
+    els.reportDetail.classList.add("hidden");
+    els.reportsListWrap.classList.remove("hidden");
+    showView(els.viewReports);
+    loadReports();
+  }
+
+  function renderReports(list) {
+    els.reportsList.innerHTML = "";
+    if (!list.length) {
+      const p = document.createElement("p");
+      p.className = "list-empty";
+      p.textContent = "No completed case sessions yet — finish a symptom check to see it here.";
+      els.reportsList.appendChild(p);
+      return;
+    }
+    list.forEach((report) => {
+      const row = document.createElement("div");
+      row.className = "list-item";
+      const title = (report.chief_complaint && report.chief_complaint.value) || report.condition_key || "Case report";
+      row.innerHTML = `
+        <div class="list-item-main">
+          <span class="list-item-title">${title}</span>
+          <span class="list-item-meta">${formatDate(report.completed_at)} · ${report.department || "General Medicine"}</span>
+        </div>
+        ${report.is_urgent ? '<span class="role-badge urgent">Urgent</span>' : ""}
+      `;
+      row.style.cursor = "pointer";
+      row.addEventListener("click", () => showReportDetail(report));
+      els.reportsList.appendChild(row);
+    });
+  }
+
+  async function loadReports() {
+    try {
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.listReports(token);
+      renderReports(res.data || []);
+    } catch (err) {
+      els.reportsError.textContent = err.message;
+      els.reportsError.classList.remove("hidden");
+    }
+  }
+
+  function showReportDetail(report) {
+    els.reportsListWrap.classList.add("hidden");
+    els.reportDetail.classList.remove("hidden");
+    els.reportSummaryBody.classList.add("hidden");
+    els.reportSummaryBody.textContent = "";
+    window.CareCrewChat.renderCaseSheet(els.reportDetailBody, report);
+    els.reportDetail.dataset.sessionId = report.session_id;
+  }
+
+  async function loadReportSummary(audience) {
+    const sessionId = els.reportDetail.dataset.sessionId;
+    if (!sessionId) return;
+    els.reportSummaryBody.classList.remove("hidden");
+    els.reportSummaryBody.textContent = "Generating summary...";
+    try {
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.getReportSummary(sessionId, audience, token);
+      els.reportSummaryBody.textContent = res.data.summary;
+    } catch (err) {
+      els.reportSummaryBody.textContent = `Could not generate summary: ${err.message}`;
+    }
+  }
+
   // ---------- Events ----------
   document.querySelectorAll(".role-select-btn").forEach((btn) => {
     btn.addEventListener("click", () => openLogin(btn.dataset.role));
@@ -252,6 +431,43 @@
   });
 
   els.chatBack.addEventListener("click", () => showView(els.viewPatient));
+
+  els.goAppointmentsBtn.addEventListener("click", () => openAppointments());
+  els.goReportsBtn.addEventListener("click", () => openReports());
+  els.appointmentsBack.addEventListener("click", () => showView(els.viewPatient));
+  els.reportsBack.addEventListener("click", () => showView(els.viewPatient));
+  els.reportDetailBack.addEventListener("click", () => {
+    els.reportDetail.classList.add("hidden");
+    els.reportsListWrap.classList.remove("hidden");
+  });
+  els.reportSummaryPatientBtn.addEventListener("click", () => loadReportSummary("patient"));
+  els.reportSummaryDoctorBtn.addEventListener("click", () => loadReportSummary("doctor"));
+
+  els.appointmentForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    els.appointmentsError.classList.add("hidden");
+    els.apptSubmit.disabled = true;
+    try {
+      const token = window.CareCrewSession.getToken();
+      await CareCrewAPI.createAppointment(
+        {
+          department: els.apptDepartment.value,
+          preferred_date: els.apptDate.value || null,
+          note: els.apptNote.value.trim() || null,
+          urgent: els.apptUrgent.checked,
+        },
+        token
+      );
+      els.apptNote.value = "";
+      els.apptUrgent.checked = false;
+      await loadAppointments();
+    } catch (err) {
+      els.appointmentsError.textContent = err.message;
+      els.appointmentsError.classList.remove("hidden");
+    } finally {
+      els.apptSubmit.disabled = false;
+    }
+  });
 
   els.logoutBtn.addEventListener("click", () => {
     clearSession();

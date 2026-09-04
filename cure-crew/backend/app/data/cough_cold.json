@@ -1,0 +1,21 @@
+{
+  "chief_complaint": "cough_cold",
+  "display_name": "Cough & Cold / Khaansi-Zukaam",
+  "opening_question": "Namaste. Khaansi ya zukaam ke baare mein bataiye — kab se hai?",
+  "mandatory_slots": [
+    { "slot": "hopi.onset", "question": "Khaansi/zukaam kab se hai?" },
+    { "slot": "hopi.character", "question": "Khaansi sookhi (dry) hai ya balgam ke saath (phlegm) aati hai?" },
+    { "slot": "review_of_systems.phlegm_color", "question": "Agar balgam aata hai to uska rang kaisa hai — saaf, peela, ya hara?" }
+  ],
+  "screening_questions": [
+    { "slot": "review_of_systems.sore_throat", "question": "Gale mein kharaash ya dard hai?" },
+    { "slot": "review_of_systems.fever_with_it", "question": "Iske saath bukhaar bhi hai?" },
+    { "slot": "review_of_systems.breathlessness", "question": "Saans lene mein takleef ya seeti jaisi awaaz aati hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.chest_pain_with_cough", "question": "Khaansi ke saath seene mein dard hota hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.blood_in_cough", "question": "Khaansi mein kabhi khoon aaya hai?", "red_flag_trigger": true }
+  ],
+  "background_slots": [
+    { "slot": "past_history", "question": "Pehle kabhi asthma, TB, ya lung ki koi bimari hui hai?" },
+    { "slot": "personal_history.tobacco", "question": "Aap tambaku ya cigarette lete hain?" }
+  ]
+}

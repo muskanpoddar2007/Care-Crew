@@ -1,0 +1,22 @@
+{
+  "chief_complaint": "headache",
+  "display_name": "Headache / Sar Dard",
+  "opening_question": "Namaste. Sar dard ke baare mein bataiye — kab se ho raha hai?",
+  "mandatory_slots": [
+    { "slot": "hopi.onset", "question": "Sar dard kab se hai — achanak shuru hua ya dheere-dheere?" },
+    { "slot": "hopi.location", "question": "Dard sar mein kahan hota hai — poora sar, ek side, ya aankhon ke aaspaas?" },
+    { "slot": "hopi.character", "question": "Dard kaisa hai — dabaav jaisa, dhak-dhak (throbbing), ya tez chubhan jaisa?" },
+    { "slot": "hopi.severity", "question": "1 se 10 ke beech dard kitna tez hai?" },
+    { "slot": "hopi.aggravating", "question": "Kis cheez se dard badhta hai — roshni, awaaz, ya movement se?" }
+  ],
+  "screening_questions": [
+    { "slot": "review_of_systems.nausea", "question": "Sar dard ke saath ulti jaisa lagta hai?" },
+    { "slot": "review_of_systems.vision_changes", "question": "Dikhne mein koi dikkat ya dhundhla dikhna hua hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.worst_headache_ever", "question": "Kya ye aapki zindagi ka sabse tez sar dard hai, jo achanak hua ho?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.neck_stiffness", "question": "Gardan akadti hai ya bukhaar ke saath dard hai?", "red_flag_trigger": true }
+  ],
+  "background_slots": [
+    { "slot": "past_history", "question": "Pehle kabhi migraine ya sar dard ki bimari rahi hai?" },
+    { "slot": "family_history", "question": "Ghar mein kisi ko migraine ya aisi problem hai?" }
+  ]
+}

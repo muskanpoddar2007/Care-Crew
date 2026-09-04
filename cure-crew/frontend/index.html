@@ -154,7 +154,11 @@
             <div class="flat-card">
               <h3 style="margin-top:0;">You're logged in</h3>
               <p style="color:var(--color-text-muted);">Open the <strong>Profile</strong> tab to view your ID card.</p>
-              <button type="button" id="start-case-btn" class="btn-primary btn-inline">Start Symptom Check</button>
+              <div class="quick-actions">
+                <button type="button" id="start-case-btn" class="btn-primary btn-inline">Start Symptom Check</button>
+                <button type="button" id="go-appointments-btn" class="neu-btn">Book Appointment</button>
+                <button type="button" id="go-reports-btn" class="neu-btn">My Reports</button>
+              </div>
             </div>
           </div>
 
@@ -206,6 +210,78 @@
         <div id="chat-final" class="flat-card hidden">
           <h3>Final Case Summary</h3>
           <div id="casesheet-final" class="casesheet-body"></div>
+        </div>
+
+        <div id="chat-summary" class="flat-card hidden">
+          <div class="summary-header">
+            <h3>AI Summary</h3>
+            <div class="summary-toggle">
+              <button type="button" id="chat-summary-patient" class="neu-btn active">Patient-friendly</button>
+              <button type="button" id="chat-summary-doctor" class="neu-btn">Doctor-friendly</button>
+            </div>
+            <button type="button" id="chat-summary-close" class="btn-link">Close</button>
+          </div>
+          <pre id="chat-summary-body" class="summary-body"></pre>
+        </div>
+      </section>
+
+      <!-- Appointment booking -->
+      <section id="view-appointments" class="view hidden">
+        <button type="button" id="appointments-back" class="back-link">&larr; Back to dashboard</button>
+
+        <div class="flat-card">
+          <h2>Book Appointment</h2>
+          <div id="appointments-error" class="form-error hidden"></div>
+          <form id="appointment-form">
+            <div class="field">
+              <label for="appt-department">Department</label>
+              <select id="appt-department">
+                <option value="General Medicine">General Medicine</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Gastroenterology">Gastroenterology</option>
+                <option value="Pulmonology">Pulmonology</option>
+                <option value="ENT">ENT</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Dermatology">Dermatology</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="appt-date">Preferred date</label>
+              <input type="date" id="appt-date" />
+            </div>
+            <div class="field">
+              <label for="appt-note">Note (optional)</label>
+              <input type="text" id="appt-note" placeholder="Anything the doctor should know" />
+            </div>
+            <label class="checkbox-row"><input type="checkbox" id="appt-urgent" /> This feels urgent</label>
+            <button type="submit" id="appt-submit" class="btn-primary">Request Appointment</button>
+          </form>
+        </div>
+
+        <div class="flat-card">
+          <h3>My Appointments</h3>
+          <div id="appointments-list" class="list-body"></div>
+        </div>
+      </section>
+
+      <!-- Reports -->
+      <section id="view-reports" class="view hidden">
+        <button type="button" id="reports-back" class="back-link">&larr; Back to dashboard</button>
+
+        <div id="reports-list-wrap" class="flat-card">
+          <h2>My Reports</h2>
+          <div id="reports-error" class="form-error hidden"></div>
+          <div id="reports-list" class="list-body"></div>
+        </div>
+
+        <div id="report-detail" class="flat-card hidden">
+          <button type="button" id="report-detail-back" class="btn-link">&larr; Back to list</button>
+          <div id="report-detail-body" class="casesheet-body"></div>
+          <div class="summary-toggle">
+            <button type="button" id="report-summary-patient" class="neu-btn">Patient-friendly Summary</button>
+            <button type="button" id="report-summary-doctor" class="neu-btn">Doctor-friendly Summary</button>
+          </div>
+          <pre id="report-summary-body" class="summary-body hidden"></pre>
         </div>
       </section>
 

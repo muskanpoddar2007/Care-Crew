@@ -1,0 +1,21 @@
+{
+  "chief_complaint": "breathing_difficulty",
+  "display_name": "Breathing Difficulty / Saans ki Takleef",
+  "opening_question": "Namaste. Saans ki takleef ke baare mein bataiye — kab se ho rahi hai?",
+  "mandatory_slots": [
+    { "slot": "hopi.onset", "question": "Saans ki takleef kab se hai — achanak shuru hui ya dheere-dheere badhi?" },
+    { "slot": "hopi.severity", "question": "1 se 10 ke beech, saans lene mein kitni takleef hai?" },
+    { "slot": "hopi.aggravating", "question": "Kis cheez se takleef badhti hai — chalne se, letne se, ya aaram karne par bhi rehti hai?" },
+    { "slot": "review_of_systems.breathless_at_rest", "question": "Kya aaram karte waqt bhi saans phoolti hai?", "red_flag_trigger": true }
+  ],
+  "screening_questions": [
+    { "slot": "review_of_systems.chest_pain_with_breathing", "question": "Saans lene ke saath seene mein dard bhi hota hai?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.lips_bluish", "question": "Honth ya ungliyaan neeli ya pili padte dikhe hain?", "red_flag_trigger": true },
+    { "slot": "review_of_systems.wheezing", "question": "Saans lete waqt seeti jaisi awaaz (wheezing) aati hai?" },
+    { "slot": "review_of_systems.cough", "question": "Iske saath khaansi bhi hai?" }
+  ],
+  "background_slots": [
+    { "slot": "past_history", "question": "Pehle kabhi asthma, COPD, ya heart ki koi bimari hui hai?" },
+    { "slot": "drug_history", "question": "Koi inhaler ya dawai chal rahi hai?" }
+  ]
+}

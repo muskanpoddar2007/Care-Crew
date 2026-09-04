@@ -32,6 +32,43 @@ _SLOT_HINTS = {
     "drug_history": "Abhi chal rahi dawaiyan.",
     "family_history": "Ghar me kisi ko heart/aisi bimari.",
     "personal_history.tobacco": "Tambaku/cigarette lete hain? haan/nahi.",
+
+    # Fever
+    "review_of_systems.chills": "Thand lagna/kaanpna (shivering)? haan/nahi.",
+    "review_of_systems.body_ache": "Badan dard/kamzori? haan/nahi.",
+    "review_of_systems.rash": "Shareer par rash/laal daane? haan/nahi.",
+    "review_of_systems.recent_travel": "Pichle 2 hafton me bahar travel kiya? haan/nahi, kahan.",
+
+    # Cough/cold
+    "review_of_systems.phlegm_color": "Balgam ka rang (saaf/peela/hara).",
+    "review_of_systems.sore_throat": "Gale me kharaash/dard? haan/nahi.",
+    "review_of_systems.fever_with_it": "Iske saath bukhaar? haan/nahi.",
+    "review_of_systems.chest_pain_with_cough": "Khaansi ke saath seene me dard? haan/nahi.",
+    "review_of_systems.blood_in_cough": "Khaansi me khoon? haan/nahi.",
+
+    # Stomach pain
+    "review_of_systems.related_to_food": "Khaana khaane se pehle/baad me dard badhta hai.",
+    "review_of_systems.recent_food": "Aajkal kuch bahar ka/alag khaya tha.",
+    "review_of_systems.vomiting": "Ulti ho rahi hai? haan/nahi.",
+    "review_of_systems.loose_motion": "Loose motion/dast? haan/nahi.",
+    "review_of_systems.blood_in_stool": "Motion me khoon? haan/nahi.",
+    "review_of_systems.blood_in_vomit": "Ulti me khoon? haan/nahi.",
+
+    # Headache
+    "review_of_systems.vision_changes": "Dikhne me dikkat/dhundhla? haan/nahi.",
+    "review_of_systems.worst_headache_ever": "Zindagi ka sabse tez sar dard, achanak? haan/nahi.",
+    "review_of_systems.neck_stiffness": "Gardan akadna? haan/nahi.",
+
+    # Body pain
+    "review_of_systems.weakness": "Kamzori/chalne-firne me dikkat? haan/nahi.",
+    "review_of_systems.swelling": "Kisi jagah sujan (swelling)? haan/nahi.",
+
+    # Breathing difficulty
+    "review_of_systems.breathless_at_rest": "Aaram karte waqt bhi saans phoolna? haan/nahi.",
+    "review_of_systems.chest_pain_with_breathing": "Saans ke saath seene me dard? haan/nahi.",
+    "review_of_systems.lips_bluish": "Honth/ungliyaan neeli/pili padna? haan/nahi.",
+    "review_of_systems.wheezing": "Seeti jaisi awaaz (wheezing)? haan/nahi.",
+    "review_of_systems.cough": "Iske saath khaansi? haan/nahi.",
 }
 
 _PROMPT = """Tum ek medical history extraction assistant ho. Tumhara kaam patient ke jawab se
