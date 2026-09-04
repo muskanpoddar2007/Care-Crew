@@ -76,4 +76,15 @@ const CareCrewAPI = {
   getReportSummary(session_id, audience, token) {
     return apiRequest(`/api/patients/me/reports/${session_id}/summary?audience=${audience}`, { token });
   },
+
+  // Doctor navigation-action destination — app/api/doctor_routes.py, auth required.
+  listDoctorAppointments(token) {
+    return apiRequest("/api/doctors/me/appointments", { token });
+  },
+
+  // Floating AI Bot — app/api/bot_routes.py. Separate contract from the
+  // Symptom Check session endpoints above; the bot never touches case-taking state.
+  botQuery(message, lang, token) {
+    return apiRequest("/api/bot/query", { method: "POST", body: { message, lang }, token });
+  },
 };

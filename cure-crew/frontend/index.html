@@ -18,8 +18,13 @@
   <!-- App shell -->
   <div id="app" class="app hidden">
     <header class="app-header">
-      <div class="brand">
-        <img id="header-logo" class="header-logo" src="assets/logo.png" alt="CareCrew" />
+      <div class="header-left">
+        <button type="button" id="hamburger-btn" class="hamburger-btn hidden" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="brand">
+          <img id="header-logo" class="header-logo" src="assets/logo.png" alt="CareCrew" />
+        </div>
       </div>
       <div class="header-actions">
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
@@ -30,7 +35,7 @@
       </div>
     </header>
 
-    <main class="main-content">
+    <main id="main-content" class="main-content">
 
       <!-- Role select -->
       <section id="view-role-select" class="view">
@@ -101,197 +106,211 @@
         </div>
       </section>
 
-      <!-- Doctor dashboard -->
-      <section id="view-doctor" class="view hidden">
-        <div class="neumorphic-scope">
-          <div class="dash-header">
-            <h1 id="doctor-welcome">Welcome back</h1>
-            <p>Here's your CareCrew dashboard.</p>
-          </div>
-          <div class="tabs">
-            <button type="button" class="neu-btn active" data-tab="overview" data-scope="doctor">Overview</button>
-            <button type="button" class="neu-btn" data-tab="profile" data-scope="doctor">Profile</button>
-          </div>
-
-          <div id="doctor-tab-overview" class="tab-panel">
-            <div class="neu-card">
-              <h3 style="margin-top:0;">You're logged in</h3>
-              <p style="color:var(--color-text-muted);">Open the <strong>Profile</strong> tab to view your full ID card.</p>
-            </div>
-          </div>
-
-          <div id="doctor-tab-profile" class="tab-panel hidden">
-            <div class="neu-card id-card">
-              <div id="doctor-avatar" class="avatar"></div>
-              <h2 id="doctor-name"></h2>
-              <span class="role-badge">Doctor</span>
-              <dl class="id-fields">
-                <div class="field-row"><dt>Doctor ID</dt><dd id="doctor-id"></dd></div>
-                <div class="field-row"><dt>Department</dt><dd id="doctor-department"></dd></div>
-                <div class="field-row"><dt>Specialty</dt><dd id="doctor-specialty"></dd></div>
-                <div class="field-row"><dt>Email</dt><dd id="doctor-email"></dd></div>
-                <div class="field-row"><dt>Phone</dt><dd id="doctor-phone"></dd></div>
-                <div class="field-row"><dt>Member since</dt><dd id="doctor-since"></dd></div>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Patient dashboard -->
-      <section id="view-patient" class="view hidden">
-        <div class="patient-scope">
-          <div class="dash-header">
-            <h1 id="patient-welcome">Welcome</h1>
-            <p>Here's your CareCrew dashboard.</p>
-          </div>
-          <div class="tabs">
-            <button type="button" class="neu-btn active" data-tab="overview" data-scope="patient">Overview</button>
-            <button type="button" class="neu-btn" data-tab="profile" data-scope="patient">Profile</button>
-          </div>
-
-          <div id="patient-tab-overview" class="tab-panel">
-            <div class="flat-card">
-              <h3 style="margin-top:0;">You're logged in</h3>
-              <p style="color:var(--color-text-muted);">Open the <strong>Profile</strong> tab to view your ID card.</p>
-              <div class="quick-actions">
-                <button type="button" id="start-case-btn" class="btn-primary btn-inline">Start Symptom Check</button>
-                <button type="button" id="go-appointments-btn" class="neu-btn">Book Appointment</button>
-                <button type="button" id="go-reports-btn" class="neu-btn">My Reports</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="patient-tab-profile" class="tab-panel hidden">
-            <div class="flat-card id-card">
-              <div id="patient-avatar" class="avatar"></div>
-              <h2 id="patient-name"></h2>
-              <span class="role-badge">Patient</span>
-              <dl class="id-fields">
-                <div class="field-row"><dt>Patient ID</dt><dd id="patient-id"></dd></div>
-                <div class="field-row"><dt>Email</dt><dd id="patient-email"></dd></div>
-                <div class="field-row"><dt>Phone</dt><dd id="patient-phone"></dd></div>
-                <div class="field-row"><dt>Member since</dt><dd id="patient-since"></dd></div>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Case-taking chat -->
-      <section id="view-chat" class="view hidden">
-        <button type="button" id="chat-back" class="back-link">&larr; Back to dashboard</button>
-
-        <div id="urgent-banner" class="urgent-banner hidden" role="alert">
-          <span class="urgent-banner-icon" aria-hidden="true">⚠️</span>
-          <div>
-            <strong>RED FLAG — this may need urgent attention</strong>
-            <ul id="urgent-banner-flags"></ul>
-          </div>
-        </div>
-
-        <div class="chat-layout">
-          <div class="chat-panel flat-card">
-            <div id="chat-messages" class="chat-messages"></div>
-
-            <form id="chat-form" class="chat-input-row">
-              <input type="text" id="chat-input" placeholder="Type your answer..." autocomplete="off" />
-              <button type="submit" id="chat-send" class="btn-primary btn-inline">Send</button>
-            </form>
-            <div id="chat-error" class="form-error hidden"></div>
-          </div>
-
-          <aside class="casesheet-panel flat-card">
-            <h3>Case Sheet</h3>
-            <div id="casesheet-live" class="casesheet-body"></div>
-          </aside>
-        </div>
-
-        <div id="chat-final" class="flat-card hidden">
-          <h3>Final Case Summary</h3>
-          <div id="casesheet-final" class="casesheet-body"></div>
-        </div>
-
-        <div id="chat-summary" class="flat-card hidden">
-          <div class="summary-header">
-            <h3>AI Summary</h3>
-            <div class="summary-toggle">
-              <button type="button" id="chat-summary-patient" class="neu-btn active">Patient-friendly</button>
-              <button type="button" id="chat-summary-doctor" class="neu-btn">Doctor-friendly</button>
-            </div>
-            <button type="button" id="chat-summary-close" class="btn-link">Close</button>
-          </div>
-          <pre id="chat-summary-body" class="summary-body"></pre>
-        </div>
-      </section>
-
-      <!-- Appointment booking -->
-      <section id="view-appointments" class="view hidden">
-        <button type="button" id="appointments-back" class="back-link">&larr; Back to dashboard</button>
-
-        <div class="flat-card">
-          <h2>Book Appointment</h2>
-          <div id="appointments-error" class="form-error hidden"></div>
-          <form id="appointment-form">
-            <div class="field">
-              <label for="appt-department">Department</label>
-              <select id="appt-department">
-                <option value="General Medicine">General Medicine</option>
-                <option value="Cardiology">Cardiology</option>
-                <option value="Gastroenterology">Gastroenterology</option>
-                <option value="Pulmonology">Pulmonology</option>
-                <option value="ENT">ENT</option>
-                <option value="Orthopedics">Orthopedics</option>
-                <option value="Dermatology">Dermatology</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="appt-date">Preferred date</label>
-              <input type="date" id="appt-date" />
-            </div>
-            <div class="field">
-              <label for="appt-note">Note (optional)</label>
-              <input type="text" id="appt-note" placeholder="Anything the doctor should know" />
-            </div>
-            <label class="checkbox-row"><input type="checkbox" id="appt-urgent" /> This feels urgent</label>
-            <button type="submit" id="appt-submit" class="btn-primary">Request Appointment</button>
-          </form>
-        </div>
-
-        <div class="flat-card">
-          <h3>My Appointments</h3>
-          <div id="appointments-list" class="list-body"></div>
-        </div>
-      </section>
-
-      <!-- Reports -->
-      <section id="view-reports" class="view hidden">
-        <button type="button" id="reports-back" class="back-link">&larr; Back to dashboard</button>
-
-        <div id="reports-list-wrap" class="flat-card">
-          <h2>My Reports</h2>
-          <div id="reports-error" class="form-error hidden"></div>
-          <div id="reports-list" class="list-body"></div>
-        </div>
-
-        <div id="report-detail" class="flat-card hidden">
-          <button type="button" id="report-detail-back" class="btn-link">&larr; Back to list</button>
-          <div id="report-detail-body" class="casesheet-body"></div>
-          <div class="summary-toggle">
-            <button type="button" id="report-summary-patient" class="neu-btn">Patient-friendly Summary</button>
-            <button type="button" id="report-summary-doctor" class="neu-btn">Doctor-friendly Summary</button>
-          </div>
-          <pre id="report-summary-body" class="summary-body hidden"></pre>
-        </div>
-      </section>
-
     </main>
+
+    <!-- Post-login app shell: sidebar + content. Login/role-select above stay outside this. -->
+    <div id="app-shell" class="app-shell hidden">
+      <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+
+      <aside id="sidebar" class="sidebar">
+        <nav id="sidebar-nav" class="sidebar-nav"></nav>
+      </aside>
+
+      <div class="shell-content">
+
+        <!-- Dashboard -->
+        <section id="view-dashboard" class="view">
+          <div class="dash-header">
+            <h1 id="dashboard-welcome">Welcome</h1>
+            <p id="dashboard-subtitle">Here's your CareCrew dashboard.</p>
+          </div>
+
+          <div id="dashboard-id-card" class="id-card-wrap"></div>
+
+          <div id="dashboard-patient-actions" class="quick-actions hidden">
+            <button type="button" id="start-case-btn" class="btn-primary btn-inline">Start Symptom Check</button>
+            <button type="button" id="go-appointments-btn" class="neu-btn">Book Appointment</button>
+            <button type="button" id="go-reports-btn" class="neu-btn">My Reports</button>
+          </div>
+
+          <div id="dashboard-doctor-actions" class="hidden">
+            <div class="flat-card">
+              <h3 style="margin-top:0;">Today's Appointments</h3>
+              <p style="color:var(--color-text-muted);">View appointment requests routed to your department.</p>
+              <button type="button" id="go-doctor-appointments-btn" class="btn-primary btn-inline">View Appointments</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Profile -->
+        <section id="view-profile" class="view hidden">
+          <div class="dash-header">
+            <h1>Profile</h1>
+            <p>Your full CareCrew ID card.</p>
+          </div>
+          <div id="profile-id-card" class="id-card-wrap"></div>
+        </section>
+
+        <!-- Case-taking chat (Symptom Check entry point — becomes a form in Phase 3) -->
+        <section id="view-chat" class="view hidden">
+          <button type="button" id="chat-back" class="back-link">&larr; Back to dashboard</button>
+
+          <div id="urgent-banner" class="urgent-banner hidden" role="alert">
+            <span class="urgent-banner-icon" aria-hidden="true">⚠️</span>
+            <div>
+              <strong>RED FLAG — this may need urgent attention</strong>
+              <ul id="urgent-banner-flags"></ul>
+            </div>
+          </div>
+
+          <div class="chat-layout">
+            <div class="chat-panel flat-card">
+              <div id="chat-messages" class="chat-messages"></div>
+
+              <form id="chat-form" class="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Type your answer..." autocomplete="off" />
+                <button type="submit" id="chat-send" class="btn-primary btn-inline">Send</button>
+              </form>
+              <div id="chat-error" class="form-error hidden"></div>
+            </div>
+
+            <aside class="casesheet-panel flat-card">
+              <h3>Case Sheet</h3>
+              <div id="casesheet-live" class="casesheet-body"></div>
+            </aside>
+          </div>
+
+          <div id="chat-final" class="flat-card hidden">
+            <h3>Final Case Summary</h3>
+            <div id="casesheet-final" class="casesheet-body"></div>
+          </div>
+
+          <div id="chat-summary" class="flat-card hidden">
+            <div class="summary-header">
+              <h3>AI Summary</h3>
+              <div class="summary-toggle">
+                <button type="button" id="chat-summary-patient" class="neu-btn active">Patient-friendly</button>
+                <button type="button" id="chat-summary-doctor" class="neu-btn">Doctor-friendly</button>
+              </div>
+              <button type="button" id="chat-summary-close" class="btn-link">Close</button>
+            </div>
+            <pre id="chat-summary-body" class="summary-body"></pre>
+          </div>
+        </section>
+
+        <!-- Appointment booking -->
+        <section id="view-appointments" class="view hidden">
+          <button type="button" id="appointments-back" class="back-link">&larr; Back to dashboard</button>
+
+          <div class="flat-card">
+            <h2>Book Appointment</h2>
+            <div id="appointments-error" class="form-error hidden"></div>
+            <form id="appointment-form">
+              <div class="field">
+                <label for="appt-department">Department</label>
+                <select id="appt-department">
+                  <option value="General Medicine">General Medicine</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="Gastroenterology">Gastroenterology</option>
+                  <option value="Pulmonology">Pulmonology</option>
+                  <option value="ENT">ENT</option>
+                  <option value="Orthopedics">Orthopedics</option>
+                  <option value="Dermatology">Dermatology</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="appt-date">Preferred date</label>
+                <input type="date" id="appt-date" />
+              </div>
+              <div class="field">
+                <label for="appt-note">Note (optional)</label>
+                <input type="text" id="appt-note" placeholder="Anything the doctor should know" />
+              </div>
+              <label class="checkbox-row"><input type="checkbox" id="appt-urgent" /> This feels urgent</label>
+              <button type="submit" id="appt-submit" class="btn-primary">Request Appointment</button>
+            </form>
+          </div>
+
+          <div class="flat-card">
+            <h3>My Appointments</h3>
+            <div id="appointments-list" class="list-body"></div>
+          </div>
+        </section>
+
+        <!-- Reports -->
+        <section id="view-reports" class="view hidden">
+          <button type="button" id="reports-back" class="back-link">&larr; Back to dashboard</button>
+
+          <div id="reports-list-wrap" class="flat-card">
+            <h2>My Reports</h2>
+            <div id="reports-error" class="form-error hidden"></div>
+            <div id="reports-list" class="list-body"></div>
+          </div>
+
+          <div id="report-detail" class="flat-card hidden">
+            <button type="button" id="report-detail-back" class="btn-link">&larr; Back to list</button>
+            <div id="report-detail-body" class="casesheet-body"></div>
+            <div class="summary-toggle">
+              <button type="button" id="report-summary-patient" class="neu-btn">Patient-friendly Summary</button>
+              <button type="button" id="report-summary-doctor" class="neu-btn">Doctor-friendly Summary</button>
+            </div>
+            <pre id="report-summary-body" class="summary-body hidden"></pre>
+          </div>
+        </section>
+
+        <!-- Doctor appointments (department-wide, read-only) -->
+        <section id="view-doctor-appointments" class="view hidden">
+          <button type="button" id="doctor-appointments-back" class="back-link">&larr; Back to dashboard</button>
+          <div class="flat-card">
+            <h2>Appointments</h2>
+            <div id="doctor-appointments-error" class="form-error hidden"></div>
+            <div id="doctor-appointments-list" class="list-body"></div>
+          </div>
+        </section>
+
+      </div>
+
+      <button type="button" id="ai-bot-fab" class="ai-bot-fab" title="AI Assistant" aria-label="Open AI Assistant">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V3M9 3h6"/><circle cx="9" cy="13" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.2" fill="currentColor" stroke="none"/></svg>
+      </button>
+
+      <!-- Floating AI Bot popup — navigation/query assistant ONLY (never does
+           history-taking; that's the separate Symptom Check flow above). -->
+      <div id="bot-popup" class="bot-popup">
+        <div class="bot-popup-header">
+          <div class="bot-popup-title">
+            <span class="bot-avatar-dot" aria-hidden="true"></span>
+            <span>CareCrew Assistant</span>
+          </div>
+          <div class="bot-popup-header-actions">
+            <select id="bot-lang-select" class="bot-lang-select" aria-label="Language" title="Language">
+              <option value="en">EN</option>
+              <option value="hi">हिंदी</option>
+              <option value="hinglish">Hinglish</option>
+            </select>
+            <button type="button" id="bot-minimize-btn" class="bot-icon-btn" aria-label="Minimize">&minus;</button>
+            <button type="button" id="bot-close-btn" class="bot-icon-btn" aria-label="Close">&times;</button>
+          </div>
+        </div>
+
+        <div id="bot-messages" class="bot-messages"></div>
+
+        <form id="bot-form" class="bot-input-row">
+          <button type="button" id="bot-mic-btn" class="bot-icon-btn bot-mic-btn" aria-label="Voice input" title="Voice input">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v4M8 23h8"/></svg>
+          </button>
+          <input type="text" id="bot-input" placeholder="Type a message..." autocomplete="off" />
+          <button type="submit" id="bot-send-btn" class="btn-primary btn-inline bot-send-btn">Send</button>
+        </form>
+      </div>
+    </div>
   </div>
 
   <script src="js/config.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/api.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/bot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

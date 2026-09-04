@@ -17,6 +17,8 @@ from app.api.routes import router
 from app.api.auth_routes import router as auth_router
 from app.api.patient_routes import router as patient_router
 from app.api.prescription_routes import router as prescription_router
+from app.api.bot_routes import router as bot_router
+from app.api.doctor_routes import router as doctor_router
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -49,6 +51,8 @@ app.include_router(router)
 app.include_router(auth_router)
 app.include_router(prescription_router)
 app.include_router(patient_router)
+app.include_router(bot_router)
+app.include_router(doctor_router)
 
 
 @app.get("/")

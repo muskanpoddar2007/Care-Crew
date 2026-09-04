@@ -15,13 +15,28 @@
     userChipName: document.getElementById("user-chip-name"),
     logoutBtn: document.getElementById("logout-btn"),
 
+    mainContent: document.getElementById("main-content"),
     viewRoleSelect: document.getElementById("view-role-select"),
     viewLogin: document.getElementById("view-login"),
-    viewDoctor: document.getElementById("view-doctor"),
-    viewPatient: document.getElementById("view-patient"),
+
+    appShell: document.getElementById("app-shell"),
+    hamburgerBtn: document.getElementById("hamburger-btn"),
+    sidebar: document.getElementById("sidebar"),
+    sidebarNav: document.getElementById("sidebar-nav"),
+    sidebarBackdrop: document.getElementById("sidebar-backdrop"),
+    aiBotFab: document.getElementById("ai-bot-fab"),
+
+    viewDashboard: document.getElementById("view-dashboard"),
+    viewProfile: document.getElementById("view-profile"),
     viewChat: document.getElementById("view-chat"),
     viewAppointments: document.getElementById("view-appointments"),
     viewReports: document.getElementById("view-reports"),
+
+    dashboardWelcome: document.getElementById("dashboard-welcome"),
+    dashboardIdCard: document.getElementById("dashboard-id-card"),
+    dashboardPatientActions: document.getElementById("dashboard-patient-actions"),
+    dashboardDoctorActions: document.getElementById("dashboard-doctor-actions"),
+    profileIdCard: document.getElementById("profile-id-card"),
 
     startCaseBtn: document.getElementById("start-case-btn"),
     chatBack: document.getElementById("chat-back"),
@@ -49,6 +64,12 @@
     reportSummaryDoctorBtn: document.getElementById("report-summary-doctor"),
     reportSummaryBody: document.getElementById("report-summary-body"),
 
+    viewDoctorAppointments: document.getElementById("view-doctor-appointments"),
+    goDoctorAppointmentsBtn: document.getElementById("go-doctor-appointments-btn"),
+    doctorAppointmentsBack: document.getElementById("doctor-appointments-back"),
+    doctorAppointmentsError: document.getElementById("doctor-appointments-error"),
+    doctorAppointmentsList: document.getElementById("doctor-appointments-list"),
+
     backToRoles: document.getElementById("back-to-roles"),
     authTitle: document.getElementById("auth-title"),
     authSubtitle: document.getElementById("auth-subtitle"),
@@ -66,24 +87,116 @@
     fieldSpecialty: document.getElementById("field-specialty"),
   };
 
-  // ---------- View switching ----------
-  const ALL_VIEWS = [
-    els.viewRoleSelect,
-    els.viewLogin,
-    els.viewDoctor,
-    els.viewPatient,
-    els.viewChat,
-    els.viewAppointments,
-    els.viewReports,
-  ];
+  // ---------- Sidebar / shell config ----------
+  const SIDEBAR_ICONS = {
+    dashboard: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+    "symptom-check": '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><rect x="5" y="6" width="14" height="15" rx="2"/><path d="M9 13l2 2 4-4"/>',
+    reports: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>',
+    appointments: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  };
 
-  function showView(view) {
-    ALL_VIEWS.forEach((v) => v.classList.add("hidden"));
+  const SIDEBAR_ITEMS_BY_ROLE = {
+    patient: [
+      { key: "dashboard", label: "Dashboard", icon: "dashboard" },
+      { key: "chat", label: "Symptom Check", icon: "symptom-check" },
+      { key: "reports", label: "Reports", icon: "reports" },
+      { key: "appointments", label: "Appointments", icon: "appointments" },
+      { key: "profile", label: "Profile", icon: "profile" },
+    ],
+    // Doctor's "Appointments" is a separate, read-only, department-wide view
+    // (view-doctor-appointments) — NOT the patient's self-booking form.
+    doctor: [
+      { key: "dashboard", label: "Dashboard", icon: "dashboard" },
+      { key: "doctor_appointments", label: "Appointments", icon: "appointments" },
+      { key: "profile", label: "Profile", icon: "profile" },
+    ],
+  };
+
+  const SHELL_VIEWS = {
+    dashboard: els.viewDashboard,
+    profile: els.viewProfile,
+    chat: els.viewChat,
+    appointments: els.viewAppointments,
+    reports: els.viewReports,
+    doctor_appointments: els.viewDoctorAppointments,
+  };
+
+  // ---------- View switching ----------
+  // Two independent switchers: auth views (role-select/login, pre-login) and
+  // shell views (dashboard/profile/chat/appointments/reports, post-login).
+  // enterAuthMode()/enterShellMode() toggle which top-level region is visible.
+  function enterAuthMode() {
+    els.appShell.classList.add("hidden");
+    els.mainContent.classList.remove("hidden");
+    els.hamburgerBtn.classList.add("hidden");
+  }
+
+  function enterShellMode() {
+    els.mainContent.classList.add("hidden");
+    els.appShell.classList.remove("hidden");
+    els.hamburgerBtn.classList.remove("hidden");
+  }
+
+  function showAuthView(view) {
+    els.viewRoleSelect.classList.add("hidden");
+    els.viewLogin.classList.add("hidden");
     view.classList.remove("hidden");
   }
 
+  function closeSidebarDrawer() {
+    els.sidebar.classList.remove("open");
+    els.sidebarBackdrop.classList.add("hidden");
+  }
+
+  function openSidebarDrawer() {
+    els.sidebar.classList.add("open");
+    els.sidebarBackdrop.classList.remove("hidden");
+  }
+
+  function setActiveSidebarItem(key) {
+    document.querySelectorAll(".sidebar-item").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.key === key);
+    });
+  }
+
+  function showShellView(key) {
+    Object.values(SHELL_VIEWS).forEach((v) => v.classList.add("hidden"));
+    (SHELL_VIEWS[key] || SHELL_VIEWS.dashboard).classList.remove("hidden");
+    setActiveSidebarItem(key);
+    closeSidebarDrawer();
+  }
+
+  function renderSidebar(role) {
+    const items = SIDEBAR_ITEMS_BY_ROLE[role] || SIDEBAR_ITEMS_BY_ROLE.patient;
+    els.sidebarNav.innerHTML = "";
+    items.forEach((item) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sidebar-item";
+      btn.dataset.key = item.key;
+      btn.innerHTML = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SIDEBAR_ICONS[item.icon]}</svg><span>${item.label}</span>`;
+      btn.addEventListener("click", () => {
+        if (item.key === "chat") {
+          showShellView("chat");
+          window.CareCrewChat.start();
+        } else if (item.key === "appointments") {
+          openAppointments();
+        } else if (item.key === "reports") {
+          openReports();
+        } else if (item.key === "doctor_appointments") {
+          openDoctorAppointments();
+        } else {
+          showShellView(item.key);
+        }
+      });
+      els.sidebarNav.appendChild(btn);
+    });
+  }
+
   function showRoleSelect() {
-    showView(els.viewRoleSelect);
+    enterAuthMode();
+    showAuthView(els.viewRoleSelect);
     els.userChip.classList.add("hidden");
   }
 
@@ -93,7 +206,7 @@
     els.formError.classList.add("hidden");
     els.authForm.reset();
     syncAuthModeUI();
-    showView(els.viewLogin);
+    showAuthView(els.viewLogin);
   }
 
   function syncAuthModeUI() {
@@ -221,48 +334,78 @@
     }
   }
 
-  function renderDoctor(user) {
-    document.getElementById("doctor-welcome").textContent = `Welcome back, Dr. ${user.name}`;
-    document.getElementById("doctor-name").textContent = user.name;
-    document.getElementById("doctor-id").textContent = user.id;
-    document.getElementById("doctor-department").textContent = user.department || "—";
-    document.getElementById("doctor-specialty").textContent = user.specialty || "—";
-    document.getElementById("doctor-email").textContent = user.email;
-    document.getElementById("doctor-phone").textContent = user.phone || "—";
-    document.getElementById("doctor-since").textContent = formatDate(user.created_at);
-    setAvatar(document.getElementById("doctor-avatar"), user);
-    resetTabs("doctor");
-    showView(els.viewDoctor);
-  }
+  // Builds one ID card (used for both the compact Dashboard card and the
+  // full Profile card — same fields, DOM-built so user-supplied text
+  // (name/email/etc.) is never interpolated as HTML).
+  function renderIdCard(container, user) {
+    const isDoctor = user.role === "doctor";
+    container.innerHTML = "";
+    container.className = `id-card-wrap ${isDoctor ? "neumorphic-scope" : "patient-scope"}`;
 
-  function renderPatient(user) {
-    document.getElementById("patient-welcome").textContent = `Welcome, ${user.name}`;
-    document.getElementById("patient-name").textContent = user.name;
-    document.getElementById("patient-id").textContent = user.id;
-    document.getElementById("patient-email").textContent = user.email;
-    document.getElementById("patient-phone").textContent = user.phone || "—";
-    document.getElementById("patient-since").textContent = formatDate(user.created_at);
-    setAvatar(document.getElementById("patient-avatar"), user);
-    resetTabs("patient");
-    showView(els.viewPatient);
-  }
+    const card = document.createElement("div");
+    card.className = isDoctor ? "neu-card id-card" : "flat-card id-card";
 
-  function resetTabs(scope) {
-    document.querySelectorAll(`.neu-btn[data-scope="${scope}"]`).forEach((btn, i) => {
-      btn.classList.toggle("active", i === 0);
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    card.appendChild(avatar);
+
+    const h2 = document.createElement("h2");
+    h2.textContent = user.name;
+    card.appendChild(h2);
+
+    const badge = document.createElement("span");
+    badge.className = "role-badge";
+    badge.textContent = isDoctor ? "Doctor" : "Patient";
+    card.appendChild(badge);
+
+    const dl = document.createElement("dl");
+    dl.className = "id-fields";
+    const fields = isDoctor
+      ? [
+          ["Doctor ID", user.id],
+          ["Department", user.department || "—"],
+          ["Specialty", user.specialty || "—"],
+          ["Email", user.email],
+          ["Phone", user.phone || "—"],
+          ["Member since", formatDate(user.created_at)],
+        ]
+      : [
+          ["Patient ID", user.id],
+          ["Email", user.email],
+          ["Phone", user.phone || "—"],
+          ["Member since", formatDate(user.created_at)],
+        ];
+    fields.forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      const dt = document.createElement("dt");
+      dt.textContent = label;
+      const dd = document.createElement("dd");
+      dd.textContent = String(value);
+      row.appendChild(dt);
+      row.appendChild(dd);
+      dl.appendChild(row);
     });
-    document.getElementById(`${scope}-tab-overview`).classList.remove("hidden");
-    document.getElementById(`${scope}-tab-profile`).classList.add("hidden");
+    card.appendChild(dl);
+    container.appendChild(card);
+    setAvatar(avatar, user);
   }
 
   function showDashboard(user, token) {
+    enterShellMode();
     els.userChip.classList.remove("hidden");
     els.userChipName.textContent = user.name;
-    if (user.role === "doctor") {
-      renderDoctor(user);
-    } else {
-      renderPatient(user);
-    }
+
+    renderSidebar(user.role);
+    renderIdCard(els.dashboardIdCard, user);
+    renderIdCard(els.profileIdCard, user);
+
+    const isDoctor = user.role === "doctor";
+    els.dashboardWelcome.textContent = isDoctor ? `Welcome back, Dr. ${user.name}` : `Welcome, ${user.name}`;
+    els.dashboardPatientActions.classList.toggle("hidden", isDoctor);
+    els.dashboardDoctorActions.classList.toggle("hidden", !isDoctor);
+
+    showShellView("dashboard");
   }
 
   // ---------- Navigation actions (driven by chat.js's action buttons too) ----------
@@ -273,11 +416,16 @@
         openAppointments(opts.department);
       } else if (target === "reports") {
         openReports();
-      } else if (target === "patient") {
-        showView(els.viewPatient);
+      } else if (target === "doctor_appointments") {
+        openDoctorAppointments();
+      } else if (target === "chat") {
+        showShellView("chat");
+        window.CareCrewChat.start();
+      } else if (target === "profile") {
+        showShellView("profile");
       } else {
         // Unknown target — fail safe back to the dashboard rather than a blank screen.
-        showView(els.viewPatient);
+        showShellView("dashboard");
       }
     },
   };
@@ -291,7 +439,7 @@
         els.apptDepartment.value = suggestedDepartment;
       }
     }
-    showView(els.viewAppointments);
+    showShellView("appointments");
     loadAppointments();
   }
 
@@ -307,13 +455,26 @@
     list.forEach((a) => {
       const row = document.createElement("div");
       row.className = "list-item";
-      row.innerHTML = `
-        <div class="list-item-main">
-          <span class="list-item-title">${a.department}</span>
-          <span class="list-item-meta">${a.preferred_date || "No date given"} · ${a.status}${a.note ? " · " + a.note : ""}</span>
-        </div>
-        ${a.urgent ? '<span class="role-badge urgent">Urgent</span>' : ""}
-      `;
+
+      const main = document.createElement("div");
+      main.className = "list-item-main";
+      const title = document.createElement("span");
+      title.className = "list-item-title";
+      title.textContent = a.department;
+      const meta = document.createElement("span");
+      meta.className = "list-item-meta";
+      meta.textContent = `${a.preferred_date || "No date given"} · ${a.status}${a.note ? " · " + a.note : ""}`;
+      main.appendChild(title);
+      main.appendChild(meta);
+      row.appendChild(main);
+
+      if (a.urgent) {
+        const badge = document.createElement("span");
+        badge.className = "role-badge urgent";
+        badge.textContent = "Urgent";
+        row.appendChild(badge);
+      }
+
       els.appointmentsList.appendChild(row);
     });
   }
@@ -334,7 +495,7 @@
     els.reportsError.classList.add("hidden");
     els.reportDetail.classList.add("hidden");
     els.reportsListWrap.classList.remove("hidden");
-    showView(els.viewReports);
+    showShellView("reports");
     loadReports();
   }
 
@@ -350,15 +511,27 @@
     list.forEach((report) => {
       const row = document.createElement("div");
       row.className = "list-item";
-      const title = (report.chief_complaint && report.chief_complaint.value) || report.condition_key || "Case report";
-      row.innerHTML = `
-        <div class="list-item-main">
-          <span class="list-item-title">${title}</span>
-          <span class="list-item-meta">${formatDate(report.completed_at)} · ${report.department || "General Medicine"}</span>
-        </div>
-        ${report.is_urgent ? '<span class="role-badge urgent">Urgent</span>' : ""}
-      `;
       row.style.cursor = "pointer";
+
+      const main = document.createElement("div");
+      main.className = "list-item-main";
+      const title = document.createElement("span");
+      title.className = "list-item-title";
+      title.textContent = (report.chief_complaint && report.chief_complaint.value) || report.condition_key || "Case report";
+      const meta = document.createElement("span");
+      meta.className = "list-item-meta";
+      meta.textContent = `${formatDate(report.completed_at)} · ${report.department || "General Medicine"}`;
+      main.appendChild(title);
+      main.appendChild(meta);
+      row.appendChild(main);
+
+      if (report.is_urgent) {
+        const badge = document.createElement("span");
+        badge.className = "role-badge urgent";
+        badge.textContent = "Urgent";
+        row.appendChild(badge);
+      }
+
       row.addEventListener("click", () => showReportDetail(report));
       els.reportsList.appendChild(row);
     });
@@ -398,6 +571,60 @@
     }
   }
 
+  // ---------- Doctor appointments (department-wide, read-only) ----------
+  function openDoctorAppointments() {
+    els.doctorAppointmentsError.classList.add("hidden");
+    showShellView("doctor_appointments");
+    loadDoctorAppointments();
+  }
+
+  function renderDoctorAppointments(list) {
+    els.doctorAppointmentsList.innerHTML = "";
+    if (!list.length) {
+      const p = document.createElement("p");
+      p.className = "list-empty";
+      p.textContent = "No appointments requested for your department yet.";
+      els.doctorAppointmentsList.appendChild(p);
+      return;
+    }
+    list.forEach((a) => {
+      const row = document.createElement("div");
+      row.className = "list-item";
+
+      const main = document.createElement("div");
+      main.className = "list-item-main";
+      const title = document.createElement("span");
+      title.className = "list-item-title";
+      title.textContent = a.department;
+      const meta = document.createElement("span");
+      meta.className = "list-item-meta";
+      meta.textContent = `${a.preferred_date || "No date given"} · ${a.status}${a.note ? " · " + a.note : ""}`;
+      main.appendChild(title);
+      main.appendChild(meta);
+      row.appendChild(main);
+
+      if (a.urgent) {
+        const badge = document.createElement("span");
+        badge.className = "role-badge urgent";
+        badge.textContent = "Urgent";
+        row.appendChild(badge);
+      }
+
+      els.doctorAppointmentsList.appendChild(row);
+    });
+  }
+
+  async function loadDoctorAppointments() {
+    try {
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.listDoctorAppointments(token);
+      renderDoctorAppointments(res.data || []);
+    } catch (err) {
+      els.doctorAppointmentsError.textContent = err.message;
+      els.doctorAppointmentsError.classList.remove("hidden");
+    }
+  }
+
   // ---------- Events ----------
   document.querySelectorAll(".role-select-btn").forEach((btn) => {
     btn.addEventListener("click", () => openLogin(btn.dataset.role));
@@ -411,31 +638,27 @@
     syncAuthModeUI();
   });
 
-  document.querySelectorAll(".neu-btn[data-tab]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const scope = btn.dataset.scope;
-      const tab = btn.dataset.tab;
-      document.querySelectorAll(`.neu-btn[data-scope="${scope}"]`).forEach((b) =>
-        b.classList.toggle("active", b === btn)
-      );
-      document.getElementById(`${scope}-tab-overview`).classList.toggle("hidden", tab !== "overview");
-      document.getElementById(`${scope}-tab-profile`).classList.toggle("hidden", tab !== "profile");
-    });
-  });
-
   els.themeToggle.addEventListener("click", () => window.CareCrewTheme.toggleTheme());
 
+  els.hamburgerBtn.addEventListener("click", () => {
+    if (els.sidebar.classList.contains("open")) closeSidebarDrawer();
+    else openSidebarDrawer();
+  });
+  els.sidebarBackdrop.addEventListener("click", closeSidebarDrawer);
+
   els.startCaseBtn.addEventListener("click", () => {
-    showView(els.viewChat);
+    showShellView("chat");
     window.CareCrewChat.start();
   });
 
-  els.chatBack.addEventListener("click", () => showView(els.viewPatient));
+  els.chatBack.addEventListener("click", () => showShellView("dashboard"));
 
   els.goAppointmentsBtn.addEventListener("click", () => openAppointments());
   els.goReportsBtn.addEventListener("click", () => openReports());
-  els.appointmentsBack.addEventListener("click", () => showView(els.viewPatient));
-  els.reportsBack.addEventListener("click", () => showView(els.viewPatient));
+  els.appointmentsBack.addEventListener("click", () => showShellView("dashboard"));
+  els.reportsBack.addEventListener("click", () => showShellView("dashboard"));
+  els.goDoctorAppointmentsBtn.addEventListener("click", () => openDoctorAppointments());
+  els.doctorAppointmentsBack.addEventListener("click", () => showShellView("dashboard"));
   els.reportDetailBack.addEventListener("click", () => {
     els.reportDetail.classList.add("hidden");
     els.reportsListWrap.classList.remove("hidden");
