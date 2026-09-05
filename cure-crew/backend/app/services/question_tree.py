@@ -52,6 +52,19 @@ def is_complete(sheet: CaseSheet, tree: dict) -> bool:
     return next_question(sheet, tree) is None
 
 
+def remaining_slots(sheet: CaseSheet, tree: dict) -> list[str]:
+    """Sabhi abhi-tak-KHAALI slot paths (priority order me) — next_question()
+    sirf PEHLA khaali slot deta hai, ye saare deta hai. Multi-slot extraction
+    isse jaanta hai ki ek rich jawab me aur KAUN se slot bharne allowed hain
+    (jo already bhar chuke unhe dobara mat chhedo)."""
+    return [
+        item["slot"]
+        for group in ("mandatory_slots", "screening_questions", "background_slots")
+        for item in tree.get(group, [])
+        if not _slot_filled(sheet, item["slot"])
+    ]
+
+
 # Public alias — app/services/dynamic_questions.py reuses this same
 # "is this dotted slot path already filled" check for the no-tree fallback.
 slot_filled = _slot_filled

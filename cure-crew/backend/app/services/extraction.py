@@ -1,16 +1,28 @@
 """
-Extraction — patient ke jawab se structured data (value + evidence) nikaalta hai.
+Extraction — patient ke EK jawab se structured data (value + evidence) nikaalta hai,
+MULTIPLE slots ke liye ek saath (sirf jo slot poocha gaya tha wahi nahi) — e.g.
+"duration" poochne pe patient khud hi radiation aur sweating bhi bata de to teeno
+ek hi call me bhar jaate hain. question_tree.next_question() phir un bhare hue
+slots ko khud-ba-khud skip kar deta hai, kyunki wo already-filled check karta hai.
 
-Ye pura system ki JAAN hai. Gemini patient ke natural Hinglish jawab ko dekh ke
-{"value": <saaf value>, "evidence": <patient ka exact bola hua>} return karta hai.
+Ye pura system ki JAAN hai. Model patient ke natural Hinglish jawab ko dekh ke
+{"<slot>": {"value": <saaf value>, "evidence": <patient ka exact bola hua>}, ...}
+return karta hai — sirf un slots ke liye jinke baare me patient ne kuch bataya.
 
-- GEMINI_API_KEY set hai  -> real Gemini call
-- key nahi hai            -> stub (raw text daal deta hai, taaki team bina key ke chale)
+Backend priority (koi na koi hamesha chalta hai — demo kabhi na ruke):
+1. GROQ_API_KEY set hai   -> Groq (PRIMARY — fast, live demo ke liye best)
+2. Groq fail/missing      -> GEMINI_API_KEY set hai to Gemini pe fallback
+3. dono fail/missing      -> stub (asked_slot me raw text daal deta hai, baaki khaali)
 
-Anurag: key .env me daal ke  `python -m app.services.extraction`  chala ke test kar sakta hai.
+Koi diagnosis/treatment kabhi nahi nikaalta — sirf jo patient ne khud kaha wahi
+structure hota hai, aur sirf un slots ke liye jo explicitly candidate list me diye gaye.
+
+Anurag: keys .env me daal ke `python -m app.services.extraction` chala ke test kar sakta hai.
 """
 import json
 import re
+from typing import Optional
+
 from app.core.config import settings
 
 # Har slot ke liye chhota context — isse Gemini ko pata rehta hai kya nikaalna hai.
@@ -71,24 +83,32 @@ _SLOT_HINTS = {
     "review_of_systems.cough": "Iske saath khaansi? haan/nahi.",
 }
 
-_PROMPT = """Tum ek medical history extraction assistant ho. Tumhara kaam patient ke jawab se
-ek structured field nikaalna hai. Tum diagnosis ya salah NAHI dete — sirf jo patient ne kaha
+_MULTI_PROMPT = """Tum ek medical history extraction assistant ho. Patient ke EK jawab me
+kabhi-kabhi ek se zyada cheezon ki information hoti hai — tumhara kaam un SABKO nikaalna
+hai, sirf ek tak mat ruko. Tum diagnosis ya salah NAHI dete — sirf jo patient ne khud kaha
 wahi structure karte ho.
-
-Field jo nikaalni hai: {slot}
-Is field ka matlab: {hint}
 
 Patient ne kaha: "{answer}"
 
+Neeche diye gaye fields me se, JIN JIN ke baare me patient ne is jawab me kuch bataya hai,
+sirf unhi ko bharo:
+{fields_block}
+
 Rules:
 - SIRF ek JSON object return karo. Koi markdown, koi ```, koi extra text nahi.
-- Format bilkul ye: {{"value": "<saaf, chhoti value>", "evidence": "<patient ke shabd jinse ye pata chala>"}}
+- Format bilkul ye: {{"<field_name>": {{"value": "<saaf, chhoti value>", "evidence": "<patient ke asli shabd>"}}, ...}}
+- Field name EXACTLY wahi likho jo upar diya gaya hai — naya field kabhi mat banao.
+- Jis field ke baare me patient ne KUCH nahi bataya, use output me include hi mat karo.
 - "value" saaf aur normalized ho (jaise "3 din", "7/10", "baayein haath me").
 - "evidence" patient ke ASLI shabd ho (jitna relevant part utna hi).
-- Agar patient ke jawab me is field se related kuch NAHI hai, to: {{"value": null, "evidence": null}}
-- Kuch bhi apni taraf se mat jodo. Jo nahi kaha, wo mat likho.
+- Kuch bhi apni taraf se mat jodo, diagnosis/dawai ki salah mat do — jo bola gaya sirf wahi.
+- Agar KISI bhi field ke baare me kuch nahi mila, to khaali JSON object do: {{}}
 
 JSON:"""
+
+
+def _fields_block(slots: list[str]) -> str:
+    return "\n".join(f'- "{s}": {_SLOT_HINTS.get(s, "Patient ke jawab se relevant value.")}' for s in slots)
 
 
 def _stub(slot: str, answer: str) -> dict:
@@ -97,8 +117,8 @@ def _stub(slot: str, answer: str) -> dict:
 
 
 def _parse_json(text: str) -> dict:
-    """Gemini kabhi-kabhi ``` ya extra text de deta hai — usme se JSON nikaalo."""
-    text = text.strip()
+    """Model kabhi-kabhi ``` ya extra text de deta hai — usme se JSON nikaalo."""
+    text = (text or "").strip()
     # code fences hatao
     text = re.sub(r"^```(?:json)?", "", text).strip()
     text = re.sub(r"```$", "", text).strip()
@@ -109,55 +129,116 @@ def _parse_json(text: str) -> dict:
     return json.loads(text)
 
 
-def extract(slot: str, answer: str) -> dict:
-    """
-    Patient ke jawab se {value, evidence} nikaalo.
-    Fail hone pe stub pe gir jao — demo kabhi na ruke.
-    """
-    if not settings.GEMINI_API_KEY:
-        return _stub(slot, answer)
+def _call_groq(prompt: str) -> str:
+    from groq import Groq
+    client = Groq(api_key=settings.GROQ_API_KEY)
+    resp = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        response_format={"type": "json_object"},
+    )
+    return resp.choices[0].message.content
 
-    if not (answer or "").strip():
-        return {"value": None, "evidence": None}
 
-    hint = _SLOT_HINTS.get(slot, "Patient ke jawab se relevant value nikaalo.")
-    prompt = _PROMPT.format(slot=slot, hint=hint, answer=answer.strip())
+def _call_gemini(prompt: str) -> str:
+    import google.generativeai as genai
+    genai.configure(api_key=settings.GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        "gemini-3.6-flash",
+        generation_config={"temperature": 0, "response_mime_type": "application/json"},
+    )
+    resp = model.generate_content(prompt)
+    return resp.text
+
+
+def extract(asked_slot: str, answer: str, candidate_slots: Optional[list[str]] = None) -> dict:
+    """
+    Ek patient turn se {slot: {value, evidence}} nikaalta hai — sirf `asked_slot`
+    ke liye nahi, `candidate_slots` (baaki abhi-tak-khaali slots) me se bhi jo
+    kuch patient ne isi jawab me khud bata diya ho (e.g. duration poochne par
+    radiation + sweating bhi bata dena). `asked_slot` hamesha result me hota hai
+    (kuch na mile to {{"value": None, "evidence": None}}); baaki slots sirf tabhi
+    aate hain jab unke baare me kuch mila ho.
+
+    Backend priority: Groq (PRIMARY) -> Gemini (fallback) -> stub (asked_slot
+    me raw text, baaki khaali) — koi na koi hamesha chalta hai, demo kabhi na ruke.
+    """
+    answer = (answer or "").strip()
+    slots = list(dict.fromkeys([asked_slot, *(candidate_slots or [])]))  # asked_slot first, de-duped
+
+    if not answer:
+        return {asked_slot: {"value": None, "evidence": None}}
+
+    prompt = _MULTI_PROMPT.format(answer=answer, fields_block=_fields_block(slots))
+
+    raw = None
+    if settings.GROQ_API_KEY:
+        try:
+            raw = _call_groq(prompt)
+        except Exception as e:
+            print(f"[extraction] Groq failed, falling back: {e}")
+
+    if raw is None and settings.GEMINI_API_KEY:
+        try:
+            raw = _call_gemini(prompt)
+        except Exception as e:
+            print(f"[extraction] Gemini fallback failed: {e}")
+
+    if raw is None:
+        return {asked_slot: _stub(asked_slot, answer)}
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel(
-            "gemini-3.6-flash",
-            generation_config={"temperature": 0, "response_mime_type": "application/json"},
-        )
-        resp = model.generate_content(prompt)
-        data = _parse_json(resp.text)
-        value = data.get("value")
-        evidence = data.get("evidence")
-        # agar model ne value di par evidence nahi, to patient ka raw text hi evidence
-        if value and not evidence:
-            evidence = answer.strip()
-        return {"value": value, "evidence": evidence}
+        data = _parse_json(raw)
     except Exception as e:
-        print(f"[extraction] fallback to stub ({slot}): {e}")
-        return _stub(slot, answer)
+        print(f"[extraction] JSON parse failed, stub fallback: {e}")
+        return {asked_slot: _stub(asked_slot, answer)}
+
+    results: dict = {}
+    for slot in slots:
+        entry = data.get(slot)
+        if not isinstance(entry, dict):
+            continue
+        value = entry.get("value")
+        if value in (None, ""):
+            continue
+        evidence = entry.get("evidence")
+        # agar model ne value di par evidence nahi, to patient ka raw text hi evidence
+        if not evidence:
+            evidence = answer
+        results[slot] = {"value": value, "evidence": evidence}
+
+    # asked_slot ka contract explicit rakho — na mile to bhi null ke saath present ho
+    results.setdefault(asked_slot, {"value": None, "evidence": None})
+
+    return results
 
 
 # ---- quick test: python -m app.services.extraction ----
 if __name__ == "__main__":
-    tests = [
+    print(f"GROQ key set:   {bool(settings.GROQ_API_KEY)}")
+    print(f"GEMINI key set: {bool(settings.GEMINI_API_KEY)}\n")
+
+    # Single-slot sanity checks (candidate_slots omitted -> asked_slot only)
+    single_tests = [
         ("chief_complaint", "doctor sahab subah se seene me bahut dard ho raha hai"),
         ("hopi.location", "seene ke beech me, thoda left side"),
         ("hopi.severity", "bahut tez tha, so nahi paya, 8-9 hoga"),
-        ("hopi.radiation", "haan baayein haath me bhi ja raha hai"),
-        ("review_of_systems.sweating", "haan bahut pasina aa raha tha"),
         ("hopi.onset", "achanak nashte ke baad shuru hua"),
         ("past_history", "sugar hai, aur BP ki dawai chalti hai"),
-        ("hopi.duration", "koi bees pachees minute"),
     ]
-    print(f"GEMINI key set: {bool(settings.GEMINI_API_KEY)}\n")
-    for slot, ans in tests:
+    print("=== single-slot ===")
+    for slot, ans in single_tests:
         out = extract(slot, ans)
-        print(f"[{slot}]")
-        print(f"   in : {ans}")
-        print(f"   out: value={out['value']!r}  evidence={out['evidence']!r}\n")
+        print(f"[{slot}]  in: {ans!r}")
+        print(f"   out: {out}\n")
+
+    # Rich turn — chest_pain tree ke teen slots ek saath (duration poocha,
+    # patient ne radiation + sweating bhi khud bata diya).
+    print("=== multi-slot: rich chest_pain turn (asked=hopi.duration) ===")
+    rich_answer = "koi bees pachees minute rehta hai, aur baayein haath me bhi failta hai, saath me bahut pasina aata hai"
+    candidates = ["hopi.radiation", "review_of_systems.sweating", "hopi.aggravating"]
+    out = extract("hopi.duration", rich_answer, candidate_slots=candidates)
+    print(f"in: {rich_answer!r}")
+    print(f"candidate_slots: {['hopi.duration', *candidates]}")
+    print(f"out ({len(out)} slots filled): {out}")

@@ -98,6 +98,31 @@ def _set_slot(sheet: CaseSheet, slot: str, patch: dict, turn_index: int) -> bool
     return True
 
 
+def _remaining_slots(sheet: CaseSheet) -> list:
+    """Every not-yet-filled slot for this session's tree — passed to
+    extraction.extract() as candidates so a single rich answer (e.g. duration
+    + radiation + sweating together) can fill more than just the asked slot."""
+    if sheet.condition_key is None:
+        return []
+    if sheet.tree_source == "predefined":
+        tree = question_tree.load_tree(sheet.condition_key)
+        return question_tree.remaining_slots(sheet, tree)
+    return dynamic_questions.remaining_dynamic_slots(sheet)
+
+
+def _apply_patches(sheet: CaseSheet, patches: dict, turn_index: int, primary_slot: str) -> bool:
+    """Writes every slot extraction.extract() returned into the sheet (bonus
+    slots included, not just primary_slot). Returns whether primary_slot
+    itself got a value — that's what retry/miss tracking cares about; a bonus
+    slot filling in doesn't excuse the actually-asked slot from being empty."""
+    primary_success = False
+    for slot, patch in patches.items():
+        wrote = _set_slot(sheet, slot, patch, turn_index)
+        if slot == primary_slot:
+            primary_success = wrote
+    return primary_success
+
+
 def _force_not_recorded(sheet: CaseSheet, slot: str, turn_index: int) -> None:
     """After two misses on the same slot, stop looping — record it as skipped
     and let the flow move on."""
@@ -267,8 +292,9 @@ def process_turn(
             sheet.department = classification["department"]
             sheet.tree_source = "predefined" if classification["has_tree"] else "dynamic"
 
-        patch = extraction.extract("chief_complaint", patient_text)
-        _set_slot(sheet, "chief_complaint", patch, turn_index)
+        candidate_slots = _remaining_slots(sheet)
+        patches = extraction.extract("chief_complaint", patient_text, candidate_slots=candidate_slots)
+        _apply_patches(sheet, patches, turn_index, primary_slot="chief_complaint")
 
         new_flags = _apply_red_flags(sheet)
         nxt = _next_question(sheet)
@@ -286,12 +312,15 @@ def process_turn(
             action=None,
         )
 
-    # 3. Mid-tree — this message answers `asked_slot`.
+    # 3. Mid-tree — this message answers `asked_slot`, but may volunteer other
+    #    still-unfilled slots too (e.g. duration + radiation + sweating in one
+    #    breath) — extraction.extract() fills whatever it finds in one call.
     if _is_low_signal(patient_text):
-        patch = {"value": None, "evidence": None}
+        patches = {}
     else:
-        patch = extraction.extract(asked_slot, patient_text)
-    success = _set_slot(sheet, asked_slot, patch, turn_index)
+        candidate_slots = _remaining_slots(sheet)
+        patches = extraction.extract(asked_slot, patient_text, candidate_slots=candidate_slots)
+    success = _apply_patches(sheet, patches, turn_index, primary_slot=asked_slot)
 
     if success:
         sheet.retry_counts.pop(asked_slot, None)

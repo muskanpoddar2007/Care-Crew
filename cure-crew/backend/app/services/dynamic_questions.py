@@ -67,3 +67,9 @@ def next_dynamic_question(sheet: CaseSheet) -> dict | None:
         if not _slot_filled(sheet, slot):
             return {"slot": slot, "question": _phrase_question(hint, complaint)}
     return None
+
+
+def remaining_dynamic_slots(sheet: CaseSheet) -> list[str]:
+    """Same contract as question_tree.remaining_slots — every not-yet-filled
+    slot in the universal checklist, for multi-slot extraction candidates."""
+    return [entry[0] for entry in _UNIVERSAL_SLOTS if not _slot_filled(sheet, entry[0])]
