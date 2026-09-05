@@ -5,11 +5,12 @@ Muskan: WebSocket version bhi add kar sakti ho (live typing ke liye), par ye RES
 demo ke liye kaafi hain aur frontend inhe aaj hi mock/real dono tareeke se use kar sakti hai.
 """
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from app.services import conversation, summary as summary_service
+from app.services import conversation, summary as summary_service, doctor_directory
 from app.core import session_store
 from app.core.auth import get_current_user_optional
+from app.core.responses import ok, AppError
 from app.models.user import User
 
 router = APIRouter(prefix="/api", tags=["case-taking"])
@@ -72,3 +73,20 @@ def get_session_summary(session_id: str, audience: str = "patient"):
         raise HTTPException(status_code=404, detail="Session not found")
     text = summary_service.generate_summary(sheet, audience)
     return {"summary": text, "audience": audience}
+
+
+@router.get("/session/{session_id}/recommended-doctors")
+def get_recommended_doctors(
+    session_id: str,
+    city: Optional[str] = Query(None, description="Filter to this city; omit for all cities"),
+):
+    """Chief-complaint-based doctor suggestions for this session — condition_key
+    (set once intent detection runs) maps to a specialization via specialty_map,
+    then app/services/doctor_directory picks the top 10, most-experienced-first.
+    `city` is an optional query param (not read from CaseSheet/User — neither
+    has a city field): pass it to scope results, omit it for all cities."""
+    sheet = session_store.load(session_id)
+    if sheet is None:
+        raise AppError(404, "Session not found")
+    doctors = doctor_directory.recommend_for_complaint(sheet.condition_key, city=city, limit=10)
+    return ok(data=[d.model_dump() for d in doctors])

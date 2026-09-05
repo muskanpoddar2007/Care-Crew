@@ -1,0 +1,42 @@
+doctor_name,doctor_type,experience_years,fees,hospital,location,city
+Dr. Ramesh Iyer,Cardiology,18,₹800,Apollo Hospitals,Jubilee Hills,Hyderabad
+Dr. Anjali Mehta,Cardiologist,12,Rs 600,Fortis Escorts Heart Institute,Okhla,Delhi
+Dr. Sanjay Kulkarni,Cardiology,25,1200,Ruby Hall Clinic,Sassoon Road,Pune
+Dr. Neha Verma,Cardiologist,7,Rs. 500,Lilavati Hospital,Bandra,Mumbai
+Dr. Vikram Rathore,Pulmonology,15,700,Manipal Hospital,Old Airport Road,Bangalore
+Dr. Farah Sheikh,Pulmonologist,9,₹550,Kokilaben Dhirubhai Ambani Hospital,Andheri,Mumbai
+Dr. Arjun Nair,Chest,20,900,Christian Medical College,Vellore Town,Vellore
+Dr. Meenakshi Pillai,Pulmonology,6,Free,Government General Hospital,Egmore,Chennai
+Dr. Rohit Bansal,Gastroenterology,14,₹750,Max Super Speciality Hospital,Saket,Delhi
+Dr. Kavita Rao,Gastroenterologist,10,650,Apollo Hospitals,Greams Road,Chennai
+Dr. Suresh Chandran,Gastro,22,Rs 1000,Aster Medcity,Kuttisahib Road,Kochi
+Dr. Priya Nambiar,Gastroenterologist,4,,Sahyadri Hospital,Deccan Gymkhana,Pune
+Dr. Alok Srivastava,Neurology,17,₹900,AIIMS,Ansari Nagar,Delhi
+Dr. Divya Menon,Neurologist,11,700,Amrita Hospital,Ponekkara,Kochi
+Dr. Karan Malhotra,Neuro,8,Rs 650,Manipal Hospital,HAL Road,Bangalore
+Dr. Sunita Ghosh,Neurologist,19,Free,NIMHANS,Hosur Road,Bangalore
+Dr. Manoj Tiwari,General Medicine,13,300,Care Hospitals,Banjara Hills,Hyderabad
+Dr. Ritu Sharma,General Physician,5,₹250,Fortis Hospital,Vasant Kunj,Delhi
+Dr. Deepak Joshi,Gp,21,400,Jaslok Hospital,Pedder Road,Mumbai
+Dr. Shalini Reddy,Physician,9,Rs 200,Yashoda Hospitals,Somajiguda,Hyderabad
+Dr. Imran Khan,General Medicine,3,,Primary Health Centre,MG Road,Lucknow
+Dr. Pooja Agarwal,Dermatology,10,₹450,Skin & VD Clinic,Malviya Nagar,Jaipur
+Dr. Tanmay Ghosh,Dermatologist,6,Rs 400,Apollo Hospitals,Salt Lake,Kolkata
+Dr. Aisha Fatima,Derma,14,550,Care Hospitals,Banjara Hills,Hyderabad
+Dr. Ravi Shankar,Orthopedics,20,800,Sports Injury Centre,Safdarjung,Delhi
+Dr. Nikhil Deshmukh,Orthopaedics,12,650,Sancheti Hospital,Shivajinagar,Pune
+Dr. Geeta Iyer,Ortho,8,Rs 500,Ganga Hospital,Mettupalayam Road,Coimbatore
+Dr. Anand Krishnan,Pediatrics,16,400,Rainbow Children's Hospital,Banjara Hills,Hyderabad
+Dr. Swati Kapoor,Paediatrics,9,₹350,Fortis Escorts,Okhla,Delhi
+Dr. Rajesh Pillai,Peds,24,Free,Government Medical College,Kottayam Road,Kochi
+Dr. Nandini Rao,Gynecology,18,600,Cloudnine Hospital,Jayanagar,Bangalore
+Dr. Farida Ansari,Gynaecology,11,Rs 550,Fernandez Hospital,Bogulkunta,Hyderabad
+Dr. Vidya Balan,Gyno,7,500,Motherhood Hospital,Indiranagar,Bangalore
+Dr. Sameer Wagh,Ent,13,Rs. 450,KEM Hospital,Parel,Mumbai
+Dr. Latha Krishnan,ENT,9,400,Apollo Hospitals,Greams Road,Chennai
+Dr. Ashok Bhatt,Cardiologist,30,1500,Narayana Health,Bommasandra,Bangalore
+Dr. Rekha Nair,Pulmonologist,5,,ESIC Hospital,Sanathnagar,Hyderabad
+Dr. Sameera Qureshi,Gastroenterologist,16,Rs 800,Global Hospitals,Lakdikapul,Hyderabad
+Dr. Yash Malhotra,Neurologist,4,300,City Neuro Clinic,Model Town,Ludhiana
+Dr. Om Prakash,General Physician,28,Free,District Hospital,Civil Lines,Jaipur
+Dr. Simran Kaur,General Physician,6,₹200,Max Healthcare,Patparganj,Delhi
