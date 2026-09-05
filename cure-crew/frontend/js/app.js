@@ -15,7 +15,11 @@
     userChipName: document.getElementById("user-chip-name"),
     logoutBtn: document.getElementById("logout-btn"),
 
+    headerLoginBtn: document.getElementById("header-login-btn"),
+    headerGetStartedBtn: document.getElementById("header-get-started-btn"),
+
     mainContent: document.getElementById("main-content"),
+    viewLanding: document.getElementById("view-landing"),
     viewRoleSelect: document.getElementById("view-role-select"),
     viewLogin: document.getElementById("view-login"),
 
@@ -139,9 +143,16 @@
   }
 
   function showAuthView(view) {
+    els.viewLanding.classList.add("hidden");
     els.viewRoleSelect.classList.add("hidden");
     els.viewLogin.classList.add("hidden");
     view.classList.remove("hidden");
+  }
+
+  // Sticky header shows "Login"/"Get Started" only on the pre-login landing page.
+  function setHeaderLandingNav(visible) {
+    els.headerLoginBtn.classList.toggle("hidden", !visible);
+    els.headerGetStartedBtn.classList.toggle("hidden", !visible);
   }
 
   function closeSidebarDrawer() {
@@ -194,10 +205,20 @@
     });
   }
 
+  function showLanding() {
+    enterAuthMode();
+    showAuthView(els.viewLanding);
+    els.userChip.classList.add("hidden");
+    els.mainContent.classList.add("main-content--landing");
+    setHeaderLandingNav(true);
+  }
+
   function showRoleSelect() {
     enterAuthMode();
     showAuthView(els.viewRoleSelect);
     els.userChip.classList.add("hidden");
+    els.mainContent.classList.remove("main-content--landing");
+    setHeaderLandingNav(false);
   }
 
   function openLogin(role) {
@@ -393,6 +414,8 @@
 
   function showDashboard(user, token) {
     enterShellMode();
+    els.mainContent.classList.remove("main-content--landing");
+    setHeaderLandingNav(false);
     els.userChip.classList.remove("hidden");
     els.userChipName.textContent = user.name;
 
@@ -632,6 +655,24 @@
 
   els.backToRoles.addEventListener("click", showRoleSelect);
 
+  // ---------- Landing page CTAs (all funnel into the existing role-select -> login/signup flow) ----------
+  els.headerLoginBtn.addEventListener("click", showRoleSelect);
+  els.headerGetStartedBtn.addEventListener("click", showRoleSelect);
+
+  const heroGetStartedBtn = document.getElementById("hero-get-started");
+  const heroHowItWorksBtn = document.getElementById("hero-how-it-works");
+  const finalGetStartedBtn = document.getElementById("final-get-started");
+  const footerLoginBtn = document.getElementById("footer-login");
+
+  if (heroGetStartedBtn) heroGetStartedBtn.addEventListener("click", showRoleSelect);
+  if (finalGetStartedBtn) finalGetStartedBtn.addEventListener("click", showRoleSelect);
+  if (footerLoginBtn) footerLoginBtn.addEventListener("click", showRoleSelect);
+  if (heroHowItWorksBtn) {
+    heroHowItWorksBtn.addEventListener("click", () => {
+      document.getElementById("how-it-works").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   els.authToggleMode.addEventListener("click", () => {
     authMode = authMode === "login" ? "register" : "login";
     els.formError.classList.add("hidden");
@@ -754,7 +795,7 @@
         clearSession();
       }
     }
-    setTimeout(showRoleSelect, 1900);
+    setTimeout(showLanding, 1900);
   }
 
   boot();

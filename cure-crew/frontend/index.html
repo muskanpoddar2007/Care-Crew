@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/landing.css" />
 </head>
 <body>
 
@@ -27,6 +28,8 @@
         </div>
       </div>
       <div class="header-actions">
+        <button type="button" id="header-login-btn" class="header-nav-link hidden">Login</button>
+        <button type="button" id="header-get-started-btn" class="header-nav-cta hidden">Get Started</button>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
         <div id="user-chip" class="user-chip hidden">
           <span id="user-chip-name"></span>
@@ -37,8 +40,168 @@
 
     <main id="main-content" class="main-content">
 
+      <!-- Landing page (pre-login marketing/hook page — first thing a signed-out visitor sees) -->
+      <section id="view-landing" class="view landing-view">
+        <header class="landing-hero">
+          <div class="landing-hero-copy reveal-up">
+            <span class="landing-eyebrow">AI-assisted case-taking for Indian OPDs &amp; PHCs</span>
+            <h1 class="landing-headline">Your symptoms, understood.<br />Your history, structured.</h1>
+            <p class="landing-hero-sub">CareCrew's AI takes your medical history in your own language and hands your doctor a verified, ready case sheet — before you even sit down.</p>
+            <div class="landing-hero-ctas">
+              <button type="button" id="hero-get-started" class="landing-btn-primary">Get Started</button>
+              <button type="button" id="hero-how-it-works" class="landing-btn-secondary">See How It Works</button>
+            </div>
+            <p class="landing-trust-line">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              Built for Indian clinics&nbsp;&middot;&nbsp;Bilingual&nbsp;&middot;&nbsp;Doctor-verified
+            </p>
+          </div>
+          <div class="landing-hero-visual reveal-up" aria-hidden="true">
+            <div class="hero-mock">
+              <div class="hero-mock-chat">
+                <div class="hero-mock-chat-bubble hero-mock-chat-bubble--agent">Where exactly is the pain?</div>
+                <div class="hero-mock-chat-bubble hero-mock-chat-bubble--user">Lower right side, since yesterday</div>
+                <div class="hero-mock-chat-bubble hero-mock-chat-bubble--agent">On a scale of 1&ndash;10?</div>
+              </div>
+              <div class="hero-mock-sheet">
+                <div class="hero-mock-sheet-title">Case Sheet</div>
+                <div class="hero-mock-sheet-row"><span>Chief complaint</span><strong>Abdominal pain</strong></div>
+                <div class="hero-mock-sheet-row"><span>Duration</span><strong>1 day</strong></div>
+                <div class="hero-mock-sheet-row"><span>Severity</span><strong>7 / 10</strong></div>
+                <div class="hero-mock-sheet-flag">&#9888; Red-flag check: appendicitis pattern</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="landing-trustbar">
+          <div class="trust-stat reveal-up">
+            <span class="trust-stat-value">&lt;2 min</span>
+            <span class="trust-stat-label">Structured history</span>
+          </div>
+          <div class="trust-stat reveal-up">
+            <span class="trust-stat-value">100%</span>
+            <span class="trust-stat-label">Evidence-linked answers</span>
+          </div>
+          <div class="trust-stat reveal-up">
+            <span class="trust-stat-value">Auto</span>
+            <span class="trust-stat-label">Emergency red-flag detection</span>
+          </div>
+          <div class="trust-stat reveal-up">
+            <span class="trust-stat-value">Hindi+</span>
+            <span class="trust-stat-label">Regional language support</span>
+          </div>
+        </section>
+
+        <section id="how-it-works" class="landing-section">
+          <div class="landing-section-head reveal-up">
+            <h2>How It Works</h2>
+            <p>From symptom to case sheet in four simple steps.</p>
+          </div>
+          <div class="landing-steps">
+            <div class="landing-step reveal-up">
+              <span class="landing-step-number">01</span>
+              <div class="landing-step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+              <h3>Describe your symptoms</h3>
+              <p>Tell CareCrew what's wrong, in Hindi, English, or Hinglish — just like talking to a nurse.</p>
+            </div>
+            <div class="landing-step reveal-up">
+              <span class="landing-step-number">02</span>
+              <div class="landing-step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></div>
+              <h3>AI asks the right questions</h3>
+              <p>Deterministic, clinically-guided questions — no guessing, no hallucinated diagnoses.</p>
+            </div>
+            <div class="landing-step reveal-up">
+              <span class="landing-step-number">03</span>
+              <div class="landing-step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13l2 2 4-4"/></svg></div>
+              <h3>Get a verified case sheet</h3>
+              <p>Every answer links back to your exact words, with automatic alerts for anything urgent.</p>
+            </div>
+            <div class="landing-step reveal-up">
+              <span class="landing-step-number">04</span>
+              <div class="landing-step-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2v6a2 2 0 0 0 2 2h6"/><path d="M20 12v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9l5 5"/><path d="M9.5 14.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/></svg></div>
+              <h3>Doctor reviews &amp; acts</h3>
+              <p>Your doctor opens a ready, structured case sheet instead of starting from scratch.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="landing-section landing-section-alt">
+          <div class="landing-section-head reveal-up">
+            <h2>Why CareCrew</h2>
+            <p>Built to be trustworthy first, clever second.</p>
+          </div>
+          <div class="landing-why-grid">
+            <div class="landing-why-card reveal-up">
+              <div class="landing-step-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1"/><path d="M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg></div>
+              <h3>Evidence-linked</h3>
+              <p>Every field in the case sheet traces back to the patient's exact words — nothing is invented.</p>
+            </div>
+            <div class="landing-why-card reveal-up">
+              <div class="landing-step-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></div>
+              <h3>Deterministic questions</h3>
+              <p>A clinically-guided question flow, not free-form AI guessing — consistent and explainable.</p>
+            </div>
+            <div class="landing-why-card reveal-up">
+              <div class="landing-step-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg></div>
+              <h3>Safety-first</h3>
+              <p>CareCrew never diagnoses. It only structures history and flags red flags for a doctor to review.</p>
+            </div>
+            <div class="landing-why-card reveal-up">
+              <div class="landing-step-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
+              <h3>Bilingual &amp; built for Indian PHC/OPD</h3>
+              <p>Designed around real Indian clinic workflows, in the languages patients actually speak.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="landing-section">
+          <div class="landing-section-head reveal-up">
+            <h2>Built for Both Sides of the Consultation</h2>
+            <p>One structured case sheet, useful to everyone in the room.</p>
+          </div>
+          <div class="landing-audience-grid">
+            <div class="landing-audience-col reveal-up">
+              <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>For Patients</h3>
+              <ul>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Speak in your own words — no medical jargon required</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Know instantly if something needs urgent attention</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Never repeat your history to every new doctor</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>A private health record you control</li>
+              </ul>
+            </div>
+            <div class="landing-audience-col reveal-up">
+              <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2v6a2 2 0 0 0 2 2h6"/><path d="M20 12v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9l5 5"/><path d="M9.5 14.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/></svg>For Doctors</h3>
+              <ul>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Walk in to a pre-structured, evidence-linked case sheet</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Red flags surfaced automatically, before you see the patient</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Spend consultation time on care, not data entry</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Consistent history-taking across every patient, every time</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="landing-final-cta reveal-up">
+          <h2>Start your health assessment</h2>
+          <p>Two minutes with CareCrew gives your doctor a head start on your care.</p>
+          <button type="button" id="final-get-started" class="landing-btn-primary landing-btn-primary--inverse">Get Started</button>
+        </section>
+
+        <footer class="landing-footer">
+          <div class="landing-footer-brand">
+            <img src="assets/logo.png" class="landing-footer-logo" alt="CareCrew" />
+            <p>CareCrew — AI history-taking for the clinic front line.</p>
+          </div>
+          <nav class="landing-footer-links">
+            <a href="#how-it-works">How it works</a>
+            <button type="button" id="footer-login" class="landing-footer-link-btn">Login</button>
+          </nav>
+        </footer>
+      </section>
+
       <!-- Role select -->
-      <section id="view-role-select" class="view">
+      <section id="view-role-select" class="view hidden">
         <div class="hero">
           <h1>Welcome to CareCrew</h1>
           <p>Please choose how you'd like to sign in.</p>
@@ -312,5 +475,6 @@
   <script src="js/chat.js"></script>
   <script src="js/bot.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>
