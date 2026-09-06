@@ -1,5 +1,5 @@
 """
-Cure Crew — FastAPI entrypoint.
+Care Crew — FastAPI entrypoint.
 
 Run:  uvicorn app.main:app --reload
 Docs: http://localhost:8000/docs

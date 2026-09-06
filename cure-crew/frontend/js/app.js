@@ -11,7 +11,9 @@
     app: document.getElementById("app"),
     headerLogo: document.getElementById("header-logo"),
     themeToggle: document.getElementById("theme-toggle"),
+    headerLangSelect: document.getElementById("header-lang-select"),
     userChip: document.getElementById("user-chip"),
+    userChipAvatar: document.getElementById("user-chip-avatar"),
     userChipName: document.getElementById("user-chip-name"),
     logoutBtn: document.getElementById("logout-btn"),
 
@@ -20,27 +22,38 @@
 
     mainContent: document.getElementById("main-content"),
     viewLanding: document.getElementById("view-landing"),
-    viewRoleSelect: document.getElementById("view-role-select"),
-    viewLogin: document.getElementById("view-login"),
+    viewAuth: document.getElementById("view-auth"),
 
     appShell: document.getElementById("app-shell"),
     hamburgerBtn: document.getElementById("hamburger-btn"),
     sidebar: document.getElementById("sidebar"),
     sidebarNav: document.getElementById("sidebar-nav"),
+    sidebarProfile: document.getElementById("sidebar-profile"),
+    sidebarProfileAvatar: document.getElementById("sidebar-profile-avatar"),
+    sidebarProfileName: document.getElementById("sidebar-profile-name"),
+    sidebarProfileRole: document.getElementById("sidebar-profile-role"),
     sidebarBackdrop: document.getElementById("sidebar-backdrop"),
     aiBotFab: document.getElementById("ai-bot-fab"),
 
     viewDashboard: document.getElementById("view-dashboard"),
+    viewDiagnosis: document.getElementById("view-diagnosis"),
+    diagnosisBack: document.getElementById("diagnosis-back"),
     viewProfile: document.getElementById("view-profile"),
     viewChat: document.getElementById("view-chat"),
     viewAppointments: document.getElementById("view-appointments"),
     viewReports: document.getElementById("view-reports"),
 
     dashboardWelcome: document.getElementById("dashboard-welcome"),
+    dashboardSubtitle: document.getElementById("dashboard-subtitle"),
     dashboardIdCard: document.getElementById("dashboard-id-card"),
-    dashboardPatientActions: document.getElementById("dashboard-patient-actions"),
+    dashboardPatientHome: document.getElementById("dashboard-patient-home"),
     dashboardDoctorActions: document.getElementById("dashboard-doctor-actions"),
     profileIdCard: document.getElementById("profile-id-card"),
+
+    nextAppointmentBody: document.getElementById("next-appointment-body"),
+    lastCasesheetBody: document.getElementById("last-casesheet-body"),
+    recentActivityList: document.getElementById("recent-activity-list"),
+    reportStatusLink: document.getElementById("report-status-link"),
 
     startCaseBtn: document.getElementById("start-case-btn"),
     chatBack: document.getElementById("chat-back"),
@@ -74,18 +87,26 @@
     doctorAppointmentsError: document.getElementById("doctor-appointments-error"),
     doctorAppointmentsList: document.getElementById("doctor-appointments-list"),
 
-    backToRoles: document.getElementById("back-to-roles"),
-    authTitle: document.getElementById("auth-title"),
-    authSubtitle: document.getElementById("auth-subtitle"),
+    authBackHome: document.getElementById("auth-back-home"),
+    authLangSelect: document.getElementById("auth-lang-select"),
+    authThemeToggle: document.getElementById("auth-theme-toggle"),
+    rolePatientBtn: document.getElementById("role-toggle-patient"),
+    roleDoctorBtn: document.getElementById("role-toggle-doctor"),
+    authHeading: document.getElementById("auth-heading"),
+    authSubheading: document.getElementById("auth-subheading"),
     authForm: document.getElementById("auth-form"),
     authSubmit: document.getElementById("auth-submit"),
     authToggleMode: document.getElementById("auth-toggle-mode"),
     authToggleText: document.getElementById("auth-toggle-text"),
     formError: document.getElementById("form-error"),
+    formSuccess: document.getElementById("form-success"),
 
     fieldName: document.getElementById("field-name"),
+    fieldIdentifier: document.getElementById("field-identifier"),
+    fieldIdentifierLabel: document.getElementById("field-identifier-label"),
     fieldEmail: document.getElementById("field-email"),
     fieldPassword: document.getElementById("field-password"),
+    fieldConfirmPassword: document.getElementById("field-confirm-password"),
     fieldPhone: document.getElementById("field-phone"),
     fieldDepartment: document.getElementById("field-department"),
     fieldSpecialty: document.getElementById("field-specialty"),
@@ -98,18 +119,30 @@
     reports: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>',
     appointments: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    diagnosis: '<path d="M11 2v6a2 2 0 0 0 2 2h6"/><path d="M20 12v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9l5 5"/><path d="M9.5 14.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/>',
   };
 
+  // label is a fallback string; data-i18n key (set below) keeps it in sync
+  // with the language selector without re-rendering the sidebar.
   const SIDEBAR_ITEMS_BY_ROLE = {
     patient: [
-      { key: "dashboard", label: "Dashboard", icon: "dashboard" },
-      { key: "chat", label: "Symptom Check", icon: "symptom-check" },
-      { key: "reports", label: "Reports", icon: "reports" },
-      { key: "appointments", label: "Appointments", icon: "appointments" },
-      { key: "profile", label: "Profile", icon: "profile" },
+      { key: "dashboard", label: "Home", icon: "dashboard", i18n: "nav_home" },
+      { key: "chat", label: "Start Symptom Check", icon: "symptom-check", i18n: "nav_symptom_check" },
+      { key: "reports", label: "Case Sheet", icon: "reports", i18n: "nav_case_sheet" },
+      { key: "appointments", label: "Book Appointment", icon: "appointments", i18n: "nav_appointment" },
+      {
+        key: "diagnosis", label: "Diagnosis", icon: "diagnosis", i18n: "nav_diagnosis", group: true,
+        children: [
+          { key: "diagnosis:previous", label: "Previous Diagnosis", i18n: "nav_previous_diagnosis" },
+          { key: "diagnosis:current", label: "Current Diagnosis", i18n: "nav_current_diagnosis" },
+          { key: "diagnosis:dietary", label: "Dietary", i18n: "nav_dietary" },
+        ],
+      },
+      { key: "profile", label: "Profile", icon: "profile", i18n: "nav_profile" },
     ],
     // Doctor's "Appointments" is a separate, read-only, department-wide view
     // (view-doctor-appointments) — NOT the patient's self-booking form.
+    // Doctor sidebar/dashboard is intentionally untouched by the patient redesign.
     doctor: [
       { key: "dashboard", label: "Dashboard", icon: "dashboard" },
       { key: "doctor_appointments", label: "Appointments", icon: "appointments" },
@@ -119,6 +152,7 @@
 
   const SHELL_VIEWS = {
     dashboard: els.viewDashboard,
+    diagnosis: els.viewDiagnosis,
     profile: els.viewProfile,
     chat: els.viewChat,
     appointments: els.viewAppointments,
@@ -144,8 +178,7 @@
 
   function showAuthView(view) {
     els.viewLanding.classList.add("hidden");
-    els.viewRoleSelect.classList.add("hidden");
-    els.viewLogin.classList.add("hidden");
+    els.viewAuth.classList.add("hidden");
     view.classList.remove("hidden");
   }
 
@@ -171,22 +204,74 @@
     });
   }
 
-  function showShellView(key) {
+  // 150-300ms fade/slide on every shell-view switch (see .view-transition-in
+  // in css/dashboard.css). `activeKey` lets a sub-page (e.g. a Diagnosis tab)
+  // highlight a different sidebar item than the shell-view key itself.
+  function showShellView(key, activeKey) {
     Object.values(SHELL_VIEWS).forEach((v) => v.classList.add("hidden"));
-    (SHELL_VIEWS[key] || SHELL_VIEWS.dashboard).classList.remove("hidden");
-    setActiveSidebarItem(key);
+    const target = SHELL_VIEWS[key] || SHELL_VIEWS.dashboard;
+    target.classList.remove("hidden");
+    target.classList.remove("view-transition-in");
+    void target.offsetWidth; // restart the CSS animation on repeat navigations
+    target.classList.add("view-transition-in");
+    setActiveSidebarItem(activeKey || key);
     closeSidebarDrawer();
+  }
+
+  function openDiagnosis(tab) {
+    showShellView("diagnosis", `diagnosis:${tab}`);
+    const groupToggle = els.sidebarNav.querySelector('[data-key="diagnosis"]');
+    const groupWrap = groupToggle && groupToggle.closest(".sidebar-group");
+    if (groupWrap) groupWrap.classList.add("open");
+    window.CareCrewDashboard.showDiagnosisTab(tab);
   }
 
   function renderSidebar(role) {
     const items = SIDEBAR_ITEMS_BY_ROLE[role] || SIDEBAR_ITEMS_BY_ROLE.patient;
     els.sidebarNav.innerHTML = "";
     items.forEach((item) => {
+      if (item.group) {
+        const wrap = document.createElement("div");
+        wrap.className = "sidebar-group";
+
+        const toggleBtn = document.createElement("button");
+        toggleBtn.type = "button";
+        toggleBtn.className = "sidebar-item sidebar-group-toggle";
+        toggleBtn.dataset.key = item.key;
+        toggleBtn.innerHTML =
+          `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SIDEBAR_ICONS[item.icon]}</svg>` +
+          `<span data-i18n="${item.i18n}">${item.label}</span>` +
+          `<svg class="sidebar-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>`;
+        toggleBtn.addEventListener("click", () => wrap.classList.toggle("open"));
+
+        const subnav = document.createElement("div");
+        subnav.className = "sidebar-subnav";
+        const subnavInner = document.createElement("div");
+        subnavInner.className = "sidebar-subnav-inner";
+        item.children.forEach((child) => {
+          const childBtn = document.createElement("button");
+          childBtn.type = "button";
+          childBtn.className = "sidebar-item sidebar-subitem";
+          childBtn.dataset.key = child.key;
+          childBtn.setAttribute("data-i18n", child.i18n);
+          childBtn.textContent = child.label;
+          childBtn.addEventListener("click", () => openDiagnosis(child.key.split(":")[1]));
+          subnavInner.appendChild(childBtn);
+        });
+        subnav.appendChild(subnavInner);
+
+        wrap.appendChild(toggleBtn);
+        wrap.appendChild(subnav);
+        els.sidebarNav.appendChild(wrap);
+        return;
+      }
+
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "sidebar-item";
       btn.dataset.key = item.key;
-      btn.innerHTML = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SIDEBAR_ICONS[item.icon]}</svg><span>${item.label}</span>`;
+      const labelHtml = item.i18n ? `<span data-i18n="${item.i18n}">${item.label}</span>` : `<span>${item.label}</span>`;
+      btn.innerHTML = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SIDEBAR_ICONS[item.icon]}</svg>${labelHtml}`;
       btn.addEventListener("click", () => {
         if (item.key === "chat") {
           showShellView("chat");
@@ -197,12 +282,30 @@
           openReports();
         } else if (item.key === "doctor_appointments") {
           openDoctorAppointments();
+        } else if (item.key === "dashboard") {
+          goToDashboardHome();
         } else {
           showShellView(item.key);
         }
       });
       els.sidebarNav.appendChild(btn);
     });
+    if (window.CareCrewI18n) window.CareCrewI18n.applyToDOM();
+  }
+
+  function greeting() {
+    const hour = new Date().getHours();
+    const key = hour < 12 ? "greeting_morning" : hour < 17 ? "greeting_afternoon" : "greeting_evening";
+    return window.CareCrewI18n ? window.CareCrewI18n.t(key) : "Hello";
+  }
+
+  function renderSidebarProfile(user) {
+    els.sidebarProfile.classList.remove("hidden");
+    setAvatar(els.sidebarProfileAvatar, user);
+    els.sidebarProfileName.textContent = user.name;
+    els.sidebarProfileRole.textContent = user.role === "doctor" ? "Doctor" : "Patient";
+    els.sidebarProfileRole.setAttribute("data-i18n", user.role === "doctor" ? "role_doctor" : "role_patient");
+    if (window.CareCrewI18n) window.CareCrewI18n.applyToDOM();
   }
 
   function showLanding() {
@@ -213,43 +316,133 @@
     setHeaderLandingNav(true);
   }
 
-  function showRoleSelect() {
+  // Replaces the old two-step "pick a role card, then see the form" flow —
+  // role is now a segmented toggle inside a single split-screen auth view.
+  function showAuth(role, mode) {
+    currentRole = role || "patient";
+    authMode = mode || "login";
+    els.formError.classList.add("hidden");
+    els.formSuccess.classList.add("hidden");
+    clearFieldErrors();
+    els.authForm.reset();
+    syncAuthModeUI();
     enterAuthMode();
-    showAuthView(els.viewRoleSelect);
+    showAuthView(els.viewAuth);
     els.userChip.classList.add("hidden");
     els.mainContent.classList.remove("main-content--landing");
     setHeaderLandingNav(false);
   }
 
-  function openLogin(role) {
-    currentRole = role;
-    authMode = "login";
-    els.formError.classList.add("hidden");
-    els.authForm.reset();
-    syncAuthModeUI();
-    showAuthView(els.viewLogin);
+  function setRoleToggleUI(role) {
+    els.rolePatientBtn.classList.toggle("active", role === "patient");
+    els.rolePatientBtn.setAttribute("aria-selected", String(role === "patient"));
+    els.roleDoctorBtn.classList.toggle("active", role === "doctor");
+    els.roleDoctorBtn.setAttribute("aria-selected", String(role === "doctor"));
   }
 
   function syncAuthModeUI() {
-    const roleLabel = currentRole === "doctor" ? "Doctor" : "Patient";
+    const i18n = window.CareCrewI18n;
     const isRegister = authMode === "register";
+    const isDoctor = currentRole === "doctor";
 
-    els.authTitle.textContent = `${roleLabel} ${isRegister ? "Sign Up" : "Login"}`;
-    els.authSubtitle.textContent = isRegister
-      ? "Create an account to get started."
-      : "Sign in with your email and password.";
-    els.authSubmit.textContent = isRegister ? "Create account" : "Log in";
-    els.authToggleText.textContent = isRegister ? "Already have an account?" : "New here?";
-    els.authToggleMode.textContent = isRegister ? "Log in instead" : "Create an account";
+    setRoleToggleUI(currentRole);
+
+    els.authHeading.setAttribute("data-i18n", isRegister ? "welcome_register" : "welcome_login");
+    els.authSubheading.setAttribute("data-i18n", isRegister ? "subtitle_register" : "subtitle_login");
+    els.authSubmit.setAttribute("data-i18n", isRegister ? "btn_register" : "btn_login");
+    els.authToggleText.setAttribute("data-i18n", isRegister ? "toggle_to_login_text" : "toggle_to_register_text");
+    els.authToggleMode.setAttribute("data-i18n", isRegister ? "toggle_to_login_link" : "toggle_to_register_link");
+    els.fieldIdentifierLabel.setAttribute("data-i18n", isDoctor ? "label_doctor_id" : "label_abha");
+    els.fieldIdentifier.setAttribute("data-i18n-placeholder", isDoctor ? "placeholder_doctor_id" : "placeholder_abha");
+    els.fieldIdentifier.autocomplete = isRegister ? "off" : "username";
 
     document.querySelectorAll(".register-only").forEach((el) => {
       el.classList.toggle("hidden", !isRegister);
     });
     document.querySelectorAll(".doctor-only").forEach((el) => {
-      el.classList.toggle("hidden", !isRegister || currentRole !== "doctor");
+      el.classList.toggle("hidden", !isRegister || !isDoctor);
     });
 
     els.fieldName.required = isRegister;
+    els.fieldConfirmPassword.required = isRegister;
+
+    if (i18n) i18n.applyToDOM();
+  }
+
+  // ---------- Auth form validation ----------
+  const FIELD_ERROR_IDS = {
+    name: "err-name",
+    identifier: "err-identifier",
+    email: "err-email",
+    password: "err-password",
+    "confirm-password": "err-confirm-password",
+  };
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function clearFieldErrors() {
+    Object.values(FIELD_ERROR_IDS).forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = "";
+    });
+    document.querySelectorAll(".field.has-error").forEach((f) => f.classList.remove("has-error"));
+  }
+
+  function setFieldError(fieldKey, message) {
+    const errEl = document.getElementById(FIELD_ERROR_IDS[fieldKey]);
+    if (errEl) errEl.textContent = message;
+    const input = errEl && errEl.closest(".field");
+    if (input) input.classList.add("has-error");
+  }
+
+  // Returns true if valid; otherwise fills in inline field errors and returns false.
+  function validateForm() {
+    const i18n = window.CareCrewI18n;
+    clearFieldErrors();
+    let valid = true;
+
+    const isRegister = authMode === "register";
+    const isDoctor = currentRole === "doctor";
+
+    if (isRegister && !els.fieldName.value.trim()) {
+      setFieldError("name", i18n.t("err_name_required"));
+      valid = false;
+    }
+
+    if (!els.fieldIdentifier.value.trim()) {
+      setFieldError("identifier", i18n.t(isDoctor ? "err_doctor_id_required" : "err_abha_required"));
+      valid = false;
+    }
+
+    if (isRegister && els.fieldEmail.value.trim() && !EMAIL_RE.test(els.fieldEmail.value.trim())) {
+      setFieldError("email", i18n.t("err_email_invalid"));
+      valid = false;
+    }
+
+    if (!els.fieldPassword.value) {
+      setFieldError("password", i18n.t("err_password_required"));
+      valid = false;
+    } else if (isRegister && els.fieldPassword.value.length < 6) {
+      setFieldError("password", i18n.t("err_password_length"));
+      valid = false;
+    }
+
+    if (isRegister && els.fieldConfirmPassword.value !== els.fieldPassword.value) {
+      setFieldError("confirm-password", i18n.t("err_confirm_mismatch"));
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  // Network-level failures (server unreachable) throw a raw TypeError from
+  // fetch() itself, distinct from the app's own thrown Error(message) for a
+  // handled API/HTTP error — give the first a friendlier, translated message.
+  function describeAuthError(err) {
+    const i18n = window.CareCrewI18n;
+    if (err instanceof TypeError) {
+      return i18n.t("err_network");
+    }
+    return i18n.translateBackendError(err.message) || i18n.t("err_generic");
   }
 
   // ---------- Splash sequence ----------
@@ -383,16 +576,16 @@
     dl.className = "id-fields";
     const fields = isDoctor
       ? [
-          ["Doctor ID", user.id],
+          ["Doctor ID", user.doctor_id || "—"],
           ["Department", user.department || "—"],
           ["Specialty", user.specialty || "—"],
-          ["Email", user.email],
+          ["Email", user.email || "—"],
           ["Phone", user.phone || "—"],
           ["Member since", formatDate(user.created_at)],
         ]
       : [
-          ["Patient ID", user.id],
-          ["Email", user.email],
+          ["ABHA ID", user.abha_id || "—"],
+          ["Email", user.email || "—"],
           ["Phone", user.phone || "—"],
           ["Member since", formatDate(user.created_at)],
         ];
@@ -418,17 +611,49 @@
     setHeaderLandingNav(false);
     els.userChip.classList.remove("hidden");
     els.userChipName.textContent = user.name;
+    setAvatar(els.userChipAvatar, user);
 
     renderSidebar(user.role);
-    renderIdCard(els.dashboardIdCard, user);
+    renderSidebarProfile(user);
     renderIdCard(els.profileIdCard, user);
 
     const isDoctor = user.role === "doctor";
-    els.dashboardWelcome.textContent = isDoctor ? `Welcome back, Dr. ${user.name}` : `Welcome, ${user.name}`;
-    els.dashboardPatientActions.classList.toggle("hidden", isDoctor);
+
+    // Doctor dashboard is untouched: still gets the full ID card up top.
+    // Patient home replaces it with the redesigned overview below.
+    els.dashboardIdCard.classList.toggle("hidden", !isDoctor);
+    if (isDoctor) renderIdCard(els.dashboardIdCard, user);
+
+    els.dashboardWelcome.textContent = isDoctor
+      ? `Welcome back, Dr. ${user.name}`
+      : `${greeting()}, ${user.name} 👋`;
+    if (!isDoctor && els.dashboardSubtitle) {
+      els.dashboardSubtitle.textContent = window.CareCrewI18n
+        ? window.CareCrewI18n.t("dashboard_subtitle_patient")
+        : "Here's your health overview.";
+      els.dashboardSubtitle.setAttribute("data-i18n", "dashboard_subtitle_patient");
+    }
+
+    els.dashboardPatientHome.classList.toggle("hidden", isDoctor);
     els.dashboardDoctorActions.classList.toggle("hidden", !isDoctor);
 
+    if (!isDoctor) {
+      window.CareCrewDashboard.renderHome(token);
+    }
+
     showShellView("dashboard");
+  }
+
+  // Every "back to dashboard" / "Home" action goes through this — not just
+  // showShellView("dashboard") — so a just-booked appointment or a
+  // just-completed Symptom Check shows up immediately on return, instead of
+  // only right after login (renderHome() is otherwise only called once).
+  function goToDashboardHome() {
+    showShellView("dashboard");
+    const user = window.CareCrewSession.getUser();
+    if (user && user.role === "patient") {
+      window.CareCrewDashboard.renderHome(window.CareCrewSession.getToken());
+    }
   }
 
   // ---------- Navigation actions (driven by chat.js's action buttons too) ----------
@@ -448,7 +673,7 @@
         showShellView("profile");
       } else {
         // Unknown target — fail safe back to the dashboard rather than a blank screen.
-        showShellView("dashboard");
+        goToDashboardHome();
       }
     },
   };
@@ -649,24 +874,35 @@
   }
 
   // ---------- Events ----------
-  document.querySelectorAll(".role-select-btn").forEach((btn) => {
-    btn.addEventListener("click", () => openLogin(btn.dataset.role));
+  els.authBackHome.addEventListener("click", showLanding);
+
+  els.rolePatientBtn.addEventListener("click", () => {
+    if (currentRole === "patient") return;
+    currentRole = "patient";
+    els.formError.classList.add("hidden");
+    clearFieldErrors();
+    syncAuthModeUI();
+  });
+  els.roleDoctorBtn.addEventListener("click", () => {
+    if (currentRole === "doctor") return;
+    currentRole = "doctor";
+    els.formError.classList.add("hidden");
+    clearFieldErrors();
+    syncAuthModeUI();
   });
 
-  els.backToRoles.addEventListener("click", showRoleSelect);
-
-  // ---------- Landing page CTAs (all funnel into the existing role-select -> login/signup flow) ----------
-  els.headerLoginBtn.addEventListener("click", showRoleSelect);
-  els.headerGetStartedBtn.addEventListener("click", showRoleSelect);
+  // ---------- Landing page CTAs (all funnel into the single split-screen auth view) ----------
+  els.headerLoginBtn.addEventListener("click", () => showAuth("patient", "login"));
+  els.headerGetStartedBtn.addEventListener("click", () => showAuth("patient", "register"));
 
   const heroGetStartedBtn = document.getElementById("hero-get-started");
   const heroHowItWorksBtn = document.getElementById("hero-how-it-works");
   const finalGetStartedBtn = document.getElementById("final-get-started");
   const footerLoginBtn = document.getElementById("footer-login");
 
-  if (heroGetStartedBtn) heroGetStartedBtn.addEventListener("click", showRoleSelect);
-  if (finalGetStartedBtn) finalGetStartedBtn.addEventListener("click", showRoleSelect);
-  if (footerLoginBtn) footerLoginBtn.addEventListener("click", showRoleSelect);
+  if (heroGetStartedBtn) heroGetStartedBtn.addEventListener("click", () => showAuth("patient", "register"));
+  if (finalGetStartedBtn) finalGetStartedBtn.addEventListener("click", () => showAuth("patient", "register"));
+  if (footerLoginBtn) footerLoginBtn.addEventListener("click", () => showAuth("patient", "login"));
   if (heroHowItWorksBtn) {
     heroHowItWorksBtn.addEventListener("click", () => {
       document.getElementById("how-it-works").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -676,10 +912,42 @@
   els.authToggleMode.addEventListener("click", () => {
     authMode = authMode === "login" ? "register" : "login";
     els.formError.classList.add("hidden");
+    els.formSuccess.classList.add("hidden");
+    clearFieldErrors();
     syncAuthModeUI();
   });
 
-  els.themeToggle.addEventListener("click", () => window.CareCrewTheme.toggleTheme());
+  document.querySelectorAll(".password-toggle-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.textContent = showing ? "👁" : "🙈";
+      btn.classList.toggle("is-visible", !showing);
+      btn.setAttribute("data-i18n-aria-label", showing ? "show_password" : "hide_password");
+      if (window.CareCrewI18n) window.CareCrewI18n.applyToDOM();
+    });
+  });
+
+  els.authLangSelect.addEventListener("change", () => {
+    window.CareCrewI18n.setLang(els.authLangSelect.value);
+  });
+
+  function syncThemeIcons() {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const icon = isDark ? "☀️" : "🌙";
+    if (els.authThemeToggle) els.authThemeToggle.textContent = icon;
+  }
+
+  els.themeToggle.addEventListener("click", () => {
+    window.CareCrewTheme.toggleTheme();
+    syncThemeIcons();
+  });
+  els.authThemeToggle.addEventListener("click", () => {
+    window.CareCrewTheme.toggleTheme();
+    syncThemeIcons();
+  });
 
   els.hamburgerBtn.addEventListener("click", () => {
     if (els.sidebar.classList.contains("open")) closeSidebarDrawer();
@@ -687,19 +955,35 @@
   });
   els.sidebarBackdrop.addEventListener("click", closeSidebarDrawer);
 
+  els.sidebarProfile.addEventListener("click", () => showShellView("profile"));
+  els.diagnosisBack.addEventListener("click", goToDashboardHome);
+  document.querySelectorAll(".diagnosis-tab").forEach((btn) => {
+    btn.addEventListener("click", () => openDiagnosis(btn.dataset.tab));
+  });
+
+  // Header language selector — same CareCrewI18n as the auth screens, kept
+  // in sync with the auth panel's selector via the shared change event.
+  els.headerLangSelect.addEventListener("change", () => {
+    window.CareCrewI18n.setLang(els.headerLangSelect.value);
+  });
+  document.addEventListener("carecrew-lang-changed", (e) => {
+    if (els.headerLangSelect) els.headerLangSelect.value = e.detail.lang;
+    if (els.authLangSelect) els.authLangSelect.value = e.detail.lang;
+  });
+
   els.startCaseBtn.addEventListener("click", () => {
     showShellView("chat");
     window.CareCrewChat.start();
   });
 
-  els.chatBack.addEventListener("click", () => showShellView("dashboard"));
+  els.chatBack.addEventListener("click", goToDashboardHome);
 
   els.goAppointmentsBtn.addEventListener("click", () => openAppointments());
   els.goReportsBtn.addEventListener("click", () => openReports());
-  els.appointmentsBack.addEventListener("click", () => showShellView("dashboard"));
-  els.reportsBack.addEventListener("click", () => showShellView("dashboard"));
+  els.appointmentsBack.addEventListener("click", goToDashboardHome);
+  els.reportsBack.addEventListener("click", goToDashboardHome);
   els.goDoctorAppointmentsBtn.addEventListener("click", () => openDoctorAppointments());
-  els.doctorAppointmentsBack.addEventListener("click", () => showShellView("dashboard"));
+  els.doctorAppointmentsBack.addEventListener("click", goToDashboardHome);
   els.reportDetailBack.addEventListener("click", () => {
     els.reportDetail.classList.add("hidden");
     els.reportsListWrap.classList.remove("hidden");
@@ -735,53 +1019,76 @@
 
   els.logoutBtn.addEventListener("click", () => {
     clearSession();
-    showRoleSelect();
+    showAuth("patient", "login");
   });
 
   els.authForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     els.formError.classList.add("hidden");
+    els.formSuccess.classList.add("hidden");
+
+    if (!validateForm()) return;
+
+    const i18n = window.CareCrewI18n;
+    const isRegister = authMode === "register";
+    const isDoctor = currentRole === "doctor";
+    const identifier = els.fieldIdentifier.value.trim();
+
     els.authSubmit.disabled = true;
+    els.authSubmit.classList.add("is-loading");
+    els.authSubmit.textContent = i18n.t(isRegister ? "btn_register_loading" : "btn_login_loading");
 
     try {
-      if (authMode === "register") {
+      if (isRegister) {
         const payload = {
           name: els.fieldName.value.trim(),
-          email: els.fieldEmail.value.trim(),
+          email: els.fieldEmail.value.trim() || null,
           password: els.fieldPassword.value,
           role: currentRole,
           phone: els.fieldPhone.value.trim() || null,
         };
-        if (currentRole === "doctor") {
+        if (isDoctor) {
+          payload.doctor_id = identifier;
           payload.department = els.fieldDepartment.value.trim() || null;
           payload.specialty = els.fieldSpecialty.value.trim() || null;
+        } else {
+          payload.abha_id = identifier;
         }
-        const res = await CareCrewAPI.register(payload);
-        saveSession(res.data.access_token, res.data.user);
-        showDashboard(res.data.user, res.data.access_token);
+
+        await CareCrewAPI.register(payload);
+
+        // Do NOT auto-login — show a success state and drop the user into
+        // the login form (their identifier pre-filled) instead.
+        els.formSuccess.textContent = `${i18n.t("register_success_title")} ${i18n.t("register_success_body")}`;
+        els.formSuccess.classList.remove("hidden");
+        authMode = "login";
+        syncAuthModeUI();
+        els.fieldIdentifier.value = identifier;
       } else {
-        const payload = {
-          email: els.fieldEmail.value.trim(),
-          password: els.fieldPassword.value,
-        };
-        const res = await CareCrewAPI.login(payload);
+        const res = await CareCrewAPI.login({ identifier, password: els.fieldPassword.value });
         if (res.data.user.role !== currentRole) {
-          throw new Error(`This account is registered as ${res.data.user.role}, not ${currentRole}.`);
+          throw new Error(i18n.t("err_wrong_role"));
         }
         saveSession(res.data.access_token, res.data.user);
         showDashboard(res.data.user, res.data.access_token);
       }
     } catch (err) {
-      els.formError.textContent = err.message;
+      els.formError.textContent = describeAuthError(err);
       els.formError.classList.remove("hidden");
     } finally {
       els.authSubmit.disabled = false;
+      els.authSubmit.classList.remove("is-loading");
+      syncAuthModeUI();
     }
   });
 
   // ---------- Boot ----------
   async function boot() {
+    window.CareCrewI18n.initLang();
+    els.authLangSelect.value = window.CareCrewI18n.getLang();
+    els.headerLangSelect.value = window.CareCrewI18n.getLang();
     window.CareCrewTheme.initTheme();
+    syncThemeIcons();
     runSplash();
 
     const session = loadSession();

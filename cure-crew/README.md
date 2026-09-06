@@ -1,4 +1,4 @@
-# Cure Crew — SIH 2026
+# Care Crew — SIH 2026
 
 **Patient Case-Taking Agent** — ek conversational system jo doctor-patient baatcheet se ek
 verifiable clinical **case sheet** banata hai. Ye "chatbot" nahi hai — ye ek structured

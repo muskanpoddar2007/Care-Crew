@@ -1,0 +1,365 @@
+/* ===== Care Crew — login/signup (split-screen, neumorphic panel) ==========
+   Purely additive: reuses design tokens from styles.css (colors, radii,
+   shadows, neumorphic tokens, fonts) so light/dark theme keeps working with
+   zero extra work here. Nothing in this file touches existing app/dashboard
+   styles. */
+
+/* Fixed branding-panel colors — deliberately declared ONCE (not redefined
+   under [data-theme="dark"]) so the hero stays a constant deep-navy brand
+   panel in both themes, instead of inheriting --color-primary's dark-mode
+   inversion (which exists for small buttons/icons, not a full-bleed panel —
+   using it here would flip the hero to a pale surface in dark mode). */
+:root {
+  --auth-hero-bg: #0f2a4a;
+  --auth-hero-text: #ffffff;
+}
+
+.main-content--auth {
+  display: block;
+  padding: 0;
+}
+
+.main-content--auth .auth-view {
+  max-width: none;
+  width: 100%;
+}
+
+.auth-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 66px);
+}
+
+/* ===== Left: hero / branding panel ===== */
+.auth-hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--auth-hero-bg);
+  color: var(--auth-hero-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 56px;
+}
+
+.auth-hero::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(27, 156, 151, 0.35), transparent 65%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.auth-hero::after {
+  content: "";
+  position: absolute;
+  bottom: -80px;
+  left: -60px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 65%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.auth-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 440px;
+}
+
+.auth-hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+
+.auth-hero-logo {
+  height: 40px;
+  width: auto;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 4px;
+}
+
+.auth-hero-brand-name {
+  font-family: "Poppins", "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--auth-hero-text);
+}
+
+.auth-hero-eyebrow {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.auth-hero-tagline {
+  font-size: clamp(1.6rem, 2.4vw, 2.3rem);
+  line-height: 1.28;
+  margin: 0 0 16px;
+  color: var(--auth-hero-text);
+}
+
+.auth-hero-sub {
+  font-size: 1rem;
+  line-height: 1.6;
+  opacity: 0.85;
+  margin: 0 0 36px;
+  max-width: 400px;
+}
+
+.auth-illustration-svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  display: block;
+}
+
+/* ===== Right: auth panel ===== */
+.auth-panel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 32px 56px;
+  background: var(--color-bg);
+}
+
+.auth-panel-topbar {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.auth-back-link {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 6px 0;
+}
+
+.auth-back-link:hover {
+  color: var(--color-accent);
+}
+
+.auth-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-lang-select {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  padding: 6px 8px;
+}
+
+.auth-theme-toggle {
+  border: none;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--neu-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: 10px 10px 24px var(--neu-shadow-dark), -10px -10px 24px var(--neu-shadow-light);
+  padding: 40px 36px;
+}
+
+.auth-panel-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.auth-panel-logo {
+  height: 30px;
+  width: auto;
+  border-radius: 8px;
+}
+
+.auth-panel-name {
+  font-family: "Poppins", "Inter", sans-serif;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1.05rem;
+}
+
+/* Segmented Patient/Doctor toggle */
+.auth-role-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--neu-bg);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 26px;
+  box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+}
+
+.auth-role-btn {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-role-btn.active {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: 2px 2px 6px var(--neu-shadow-dark);
+}
+
+.auth-heading {
+  margin: 0 0 6px;
+  color: var(--color-primary);
+  font-size: 1.5rem;
+}
+
+.auth-subheading {
+  margin: 0 0 22px;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.form-success {
+  background: rgba(27, 156, 151, 0.12);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+.field-error {
+  display: block;
+  color: var(--color-danger);
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+
+.field.has-error input {
+  border-color: var(--color-danger);
+}
+
+.field.has-error input:focus {
+  outline-color: var(--color-danger);
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  padding-right: 44px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.password-toggle-btn:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+.password-toggle-btn.is-visible {
+  color: var(--color-accent);
+}
+
+.btn-primary.is-loading {
+  opacity: 0.75;
+  cursor: default;
+}
+
+/* ===== Responsive: collapse to branding-then-login on small screens ===== */
+@media (max-width: 900px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .auth-hero {
+    padding: 36px 24px 28px;
+    text-align: center;
+  }
+
+  .auth-hero-content {
+    margin: 0 auto;
+  }
+
+  .auth-hero-brand {
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+
+  .auth-hero-sub {
+    display: none;
+  }
+
+  .auth-illustration-svg {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .auth-panel-wrap {
+    padding: 20px 18px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-panel {
+    padding: 28px 22px;
+  }
+
+  .auth-hero-tagline {
+    font-size: 1.5rem;
+  }
+}

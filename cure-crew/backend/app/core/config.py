@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "Cure Crew — Case Taking Agent"
+    APP_NAME: str = "Care Crew — Case Taking Agent"
     DEBUG: bool = True
 
     # Infra
