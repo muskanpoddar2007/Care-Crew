@@ -87,4 +87,34 @@ const CareCrewAPI = {
   botQuery(message, lang, token) {
     return apiRequest("/api/bot/query", { method: "POST", body: { message, lang }, token });
   },
+
+  // Voice input (Sarvam speech-to-text) — multipart upload, so it can't go
+  // through apiRequest()'s JSON-only body handling.
+  async transcribeVoice(audioBlob, token) {
+    const form = new FormData();
+    form.append("audio", audioBlob, "recording.webm");
+
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE}/api/bot/transcribe`, {
+      method: "POST",
+      headers,
+      body: form,
+    });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {
+      // no JSON body
+    }
+
+    if (!res.ok) {
+      const message = (data && data.message) || "Voice transcription failed. Please try again or type instead.";
+      throw new Error(message);
+    }
+
+    return data;
+  },
 };
