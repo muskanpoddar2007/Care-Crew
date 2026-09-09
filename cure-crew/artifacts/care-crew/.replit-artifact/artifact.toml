@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Care Crew"
+description = "A modern patient and doctor care workspace that preserves Care Crew's existing authentication, case-taking, reports, appointments, summaries, and assistant flows while making the experience clearer and more responsive."
+version = "1.0.0"
+id = "artifacts/care-crew"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18907
+
+[services.development]
+run = "pnpm --filter @workspace/care-crew run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/care-crew", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/care-crew/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18907"
+BASE_PATH = "/"
