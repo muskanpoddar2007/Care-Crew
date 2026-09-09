@@ -64,6 +64,14 @@ def remaining_slots(sheet: CaseSheet, tree: dict) -> list[str]:
         if not _slot_filled(sheet, item["slot"])
     ]
 
+def all_slots(tree: dict) -> list[str]:
+    """All slot paths in the tree (for extraction to handle corrections to already-filled slots)."""
+    return [
+        item["slot"]
+        for group in ("mandatory_slots", "screening_questions", "background_slots")
+        for item in tree.get(group, [])
+    ]
+
 
 # Public alias — app/services/dynamic_questions.py reuses this same
 # "is this dotted slot path already filled" check for the no-tree fallback.

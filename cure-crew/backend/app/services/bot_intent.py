@@ -5,7 +5,7 @@ services/intent.py classifies a SYMPTOM message into a condition category
 (fever/stomach_pain/...) to drive the Symptom Check question tree. This
 module answers a completely different question: "what does the user want the
 APP to do" for the floating assistant widget — navigate somewhere, get a
-last-visit summary, chat naturally, or explain what Care Crew does. It never
+last-visit summary, chat naturally, or explain what CareCrew does. It never
 touches case-taking state and is never used by the Symptom Check flow.
 
 Design:
@@ -137,19 +137,19 @@ _APP_INFO_KEYWORDS = [
 ]
 
 _GREETING_REPLY = {
-    "en": "Hey! I'm the Care Crew assistant. I can help you start a Symptom Check, view your Reports or Appointments, or answer questions about the app — what would you like to do?",
-    "hi": "नमस्ते! मैं Care Crew असिस्टेंट हूँ। मैं आपकी Symptom Check शुरू करने, Reports या Appointments देखने, या ऐप के बारे में सवालों में मदद कर सकता हूँ — आप क्या करना चाहेंगे?",
-    "hinglish": "Hey! Main Care Crew assistant hoon. Main aapki Symptom Check shuru karne, Reports ya Appointments dekhne, ya app ke baare me sawaalon me madad kar sakta hoon — aap kya karna chahenge?",
+    "en": "Hey! I'm the CareCrew assistant. I can help you start a Symptom Check, view your Reports or Appointments, or answer questions about the app — what would you like to do?",
+    "hi": "नमस्ते! मैं CareCrew असिस्टेंट हूँ। मैं आपकी Symptom Check शुरू करने, Reports या Appointments देखने, या ऐप के बारे में सवालों में मदद कर सकता हूँ — आप क्या करना चाहेंगे?",
+    "hinglish": "Hey! Main CareCrew assistant hoon. Main aapki Symptom Check shuru karne, Reports ya Appointments dekhne, ya app ke baare me sawaalon me madad kar sakta hoon — aap kya karna chahenge?",
 }
 _APP_DESCRIPTION = {
-    "en": "Care Crew lets you describe your symptoms in your own words — our AI asks a few guided questions and builds a structured case sheet with any urgent red flags highlighted, so your doctor gets a head start. You can also check past Reports, book Appointments, and view your Profile from the Dashboard.",
-    "hi": "Care Crew में आप अपनी तकलीफ़ अपनी भाषा में बताते हैं — AI कुछ गाइडेड सवाल पूछता है और एक structured केस शीट बनाता है जिसमें ज़रूरी red flags भी हाइलाइट होते हैं, ताकि डॉक्टर को शुरुआत मिल जाए। आप अपनी पुरानी Reports देख सकते हैं, Appointments बुक कर सकते हैं, और Dashboard से Profile भी देख सकते हैं।",
-    "hinglish": "Care Crew me aap apni taklif apni bhasha me bataate hain — AI kuch guided sawaal poochta hai aur ek structured case sheet banata hai jisme zaroori red flags bhi highlight hote hain, taaki doctor ko shuruaat mil jaaye. Aap apni purani Reports dekh sakte hain, Appointments book kar sakte hain, aur Dashboard se Profile bhi dekh sakte hain.",
+    "en": "CareCrew lets you describe your symptoms in your own words — our AI asks a few guided questions and builds a structured case sheet with any urgent red flags highlighted, so your doctor gets a head start. You can also check past Reports, book Appointments, and view your Profile from the Dashboard.",
+    "hi": "CareCrew में आप अपनी तकलीफ़ अपनी भाषा में बताते हैं — AI कुछ गाइडेड सवाल पूछता है और एक structured केस शीट बनाता है जिसमें ज़रूरी red flags भी हाइलाइट होते हैं, ताकि डॉक्टर को शुरुआत मिल जाए। आप अपनी पुरानी Reports देख सकते हैं, Appointments बुक कर सकते हैं, और Dashboard से Profile भी देख सकते हैं।",
+    "hinglish": "CareCrew me aap apni taklif apni bhasha me bataate hain — AI kuch guided sawaal poochta hai aur ek structured case sheet banata hai jisme zaroori red flags bhi highlight hote hain, taaki doctor ko shuruaat mil jaaye. Aap apni purani Reports dekh sakte hain, Appointments book kar sakte hain, aur Dashboard se Profile bhi dekh sakte hain.",
 }
 _GENERIC_FALLBACK_REPLY = {
-    "en": "I can help you navigate Care Crew — start a Symptom Check, check your Reports or Appointments, or just tell me a bit more about what's on your mind.",
-    "hi": "मैं आपकी Care Crew में मदद कर सकता हूँ — Symptom Check शुरू करें, अपनी Reports या Appointments देखें, या मुझे थोड़ा और बताइए।",
-    "hinglish": "Main aapki Care Crew me madad kar sakta hoon — Symptom Check shuru karein, apni Reports ya Appointments dekhein, ya mujhe thoda aur bataiye ki aapke man me kya hai.",
+    "en": "I can help you navigate CareCrew — start a Symptom Check, check your Reports or Appointments, or just tell me a bit more about what's on your mind.",
+    "hi": "मैं आपकी CareCrew में मदद कर सकता हूँ — Symptom Check शुरू करें, अपनी Reports या Appointments देखें, या मुझे थोड़ा और बताइए।",
+    "hinglish": "Main aapki CareCrew me madad kar sakta hoon — Symptom Check shuru karein, apni Reports ya Appointments dekhein, ya mujhe thoda aur bataiye ki aapke man me kya hai.",
 }
 _SYMPTOM_ACK_REPLY = {
     "en": "I'm sorry to hear that. Let's get this looked at properly — Symptom Check will ask a few quick questions and prepare a case sheet for your doctor.",
@@ -258,12 +258,12 @@ def _history_block(history: list) -> str:
 # LLM-driven reply — Groq primary, Gemini fallback.
 # ---------------------------------------------------------------------------
 
-_SYSTEM_PROMPT = """Tum Care Crew app ke floating AI assistant ho — ek chhota, friendly
+_SYSTEM_PROMPT = """Tum CareCrew app ke floating AI assistant ho — ek chhota, friendly
 navigation + Q&A widget jo har page par available rehta hai. Tum KHUD patient history-taking
 (Symptom Check) nahi karte — wo ek alag dedicated flow hai jiske paas tum sirf user ko BHEJ sakte ho.
 
 CAREREW APP KE BAARE ME (jab poocha jaaye to accurately samjhao):
-- Care Crew Indian OPD/PHC clinics ke liye bana AI-assisted patient history-taking + triage app hai.
+- CareCrew Indian OPD/PHC clinics ke liye bana AI-assisted patient history-taking + triage app hai.
 - Symptom Check: patient apni taklif apni bhasha me batata hai, AI clinically-guided sawaal poochta
   hai, aur ek structured, evidence-linked case sheet banti hai jisme red-flag alerts bhi hote hain —
   doctor phir usi case sheet ko review karta hai. AI kabhi khud diagnosis nahi deta.
@@ -281,7 +281,7 @@ USER KI LANGUAGE: {lang_name} — HAMESHA isi language me jawab do.
 BEHAVIOUR RULES:
 1. Greeting / small talk / general baat ka natural, human jaisa jawab do. Plain greeting
    ("hi"/"hello"/"namaste") par KOI medical disclaimer mat jodo — bas warmly greet karo.
-2. Jab user Care Crew ke baare me poochhe, upar diye gaye knowledge se accurately samjhao.
+2. Jab user CareCrew ke baare me poochhe, upar diye gaye knowledge se accurately samjhao.
 3. Jab user kisi cheez pe navigate karna chahe, reply do AUR "action" me
    {{"type":"navigate","target":"<TARGET>","label":"<button text>"}} bhejo.
    {targets_line}

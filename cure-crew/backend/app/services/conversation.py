@@ -99,14 +99,22 @@ def _set_slot(sheet: CaseSheet, slot: str, patch: dict, turn_index: int) -> bool
 
 
 def _remaining_slots(sheet: CaseSheet) -> list:
-    """Every not-yet-filled slot for this session's tree — passed to
-    extraction.extract() as candidates so a single rich answer (e.g. duration
-    + radiation + sweating together) can fill more than just the asked slot."""
+    """Every not-yet-filled slot for this session's tree."""
     if sheet.condition_key is None:
         return []
     if sheet.tree_source == "predefined":
         tree = question_tree.load_tree(sheet.condition_key)
         return question_tree.remaining_slots(sheet, tree)
+    return dynamic_questions.remaining_dynamic_slots(sheet)
+
+def _all_slots(sheet: CaseSheet) -> list:
+    """Every slot for this session's tree, filled or not."""
+    if sheet.condition_key is None:
+        return []
+    if sheet.tree_source == "predefined":
+        tree = question_tree.load_tree(sheet.condition_key)
+        return question_tree.all_slots(tree)
+    # Dynamic tree fallback - just return the remaining slots
     return dynamic_questions.remaining_dynamic_slots(sheet)
 
 
@@ -272,6 +280,41 @@ def process_turn(
             action=action,
         )
 
+    # 1.5. Detect if the user is correcting their main condition
+    if sheet.condition_key and sheet.chief_complaint.value:
+        display_name = intent.CONDITIONS.get(sheet.condition_key, {}).get("display_name", sheet.condition_key)
+        correction = intent.detect_correction(patient_text, display_name)
+        if correction.get("is_correction"):
+            new_comp = correction.get("new_complaint", "none")
+            if new_comp.lower() != "none":
+                # Classify the new condition
+                classification = intent.classify_condition(new_comp)
+                sheet.condition_key = classification["condition_key"]
+                sheet.department = classification["department"]
+                sheet.tree_source = "predefined" if classification["has_tree"] else "dynamic"
+                
+                # Update chief complaint
+                sheet.chief_complaint.value = new_comp
+                sheet.chief_complaint.evidence = patient_text
+                
+                # Reset retries
+                sheet.retry_counts = {}
+                
+                session_store.save(sheet)
+                pending = _next_question(sheet)
+                
+                ack = f"Samajh gaya — aapko {display_name.split(' / ')[0]} nahi hai, aapko {new_comp} hai."
+                next_q = f"{ack} {pending['question']}" if pending else _completion_message()
+                
+                return _response(
+                    sheet,
+                    next_question=next_q,
+                    next_slot=(pending["slot"] if pending else None),
+                    extraction_succeeded=True,
+                    new_flags=[],
+                    action=None,
+                )
+
     # 2. First message — chief_complaint not yet captured. Classify condition
     #    (unless start_session already pinned one, in the legacy call path).
     if sheet.chief_complaint.value in (None, ""):
@@ -292,7 +335,7 @@ def process_turn(
             sheet.department = classification["department"]
             sheet.tree_source = "predefined" if classification["has_tree"] else "dynamic"
 
-        candidate_slots = _remaining_slots(sheet)
+        candidate_slots = _all_slots(sheet)
         patches = extraction.extract("chief_complaint", patient_text, candidate_slots=candidate_slots)
         _apply_patches(sheet, patches, turn_index, primary_slot="chief_complaint")
 
@@ -318,7 +361,7 @@ def process_turn(
     if _is_low_signal(patient_text):
         patches = {}
     else:
-        candidate_slots = _remaining_slots(sheet)
+        candidate_slots = _all_slots(sheet)
         patches = extraction.extract(asked_slot, patient_text, candidate_slots=candidate_slots)
     success = _apply_patches(sheet, patches, turn_index, primary_slot=asked_slot)
 

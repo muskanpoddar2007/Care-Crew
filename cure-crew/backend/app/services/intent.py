@@ -203,6 +203,41 @@ def classify_intent(text: str) -> str:
     return "symptom"
 
 
+_CORRECTION_PROMPT = """Tum ek medical assistant ho. Patient ne pehle bataya tha ki unki main problem '{current_condition}' hai.
+Ab unhone naya message bheja hai: "{text}"
+
+Kya is naye message mein patient apni main problem badal raha hai ya pehle wali problem ko mana kar raha hai? (Jaise: "fever nahi hai, pet me dard hai" ya "galti se fever bol diya").
+
+Agar HAA (unhone problem badli hai ya purani wali ko 'nahi' bola hai):
+{{ "is_correction": true, "new_complaint": "<unka naya symptom, agar bataya ho, nahi to 'none'>" }}
+
+Agar NAHI (wo bas sawaal ka jawab de rahe hain, ya koi normal baat keh rahe hain):
+{{ "is_correction": false }}
+
+SIRF JSON do, koi extra text nahi.
+JSON:"""
+
+def detect_correction(text: str, current_condition_display: str) -> dict:
+    """Detects if the user is explicitly correcting or negating their main complaint."""
+    if not settings.GEMINI_API_KEY or not current_condition_display or len(text.split()) < 2:
+        return {"is_correction": False}
+        
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel(
+            "gemini-3.6-flash",
+            generation_config={"temperature": 0, "response_mime_type": "application/json"},
+        )
+        prompt = _CORRECTION_PROMPT.format(text=text.strip(), current_condition=current_condition_display)
+        resp = model.generate_content(prompt)
+        data = _parse_json(resp.text)
+        return data
+    except Exception as e:
+        print(f"[intent] detect_correction failed: {e}")
+        return {"is_correction": False}
+
+
 if __name__ == "__main__":
     tests = [
         "mujhe bukhar hai do din se",
@@ -218,3 +253,12 @@ if __name__ == "__main__":
         print(f"{t!r:55} -> intent={classify_intent(t)!r} action={detect_action(t)}")
         if classify_intent(t) == "symptom":
             print(f"   condition={classify_condition(t)}")
+    
+    print("\n--- Correction Tests ---")
+    c_tests = [
+        ("fever nahi hai, actually mujhe pet me dard hai", "Fever / Bukhaar"),
+        ("nahi, kal se ho raha hai", "Fever / Bukhaar"),
+        ("galti se fever likh diya, mujhe khansi hai", "Fever / Bukhaar"),
+    ]
+    for txt, cond in c_tests:
+        print(f"[{cond}] {txt!r} -> {detect_correction(txt, cond)}")
