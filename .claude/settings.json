@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -c ' *)",
-      "Bash(python _delivery_test.py)",
-      "Bash(curl -s -m 3 -o /dev/null -w \"bot.js: %{http_code}\\\\n\" http://localhost:5500/js/bot.js)"
-    ]
-  }
-}
