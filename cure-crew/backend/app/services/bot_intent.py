@@ -5,7 +5,11 @@ services/intent.py classifies a SYMPTOM message into a condition category
 (fever/stomach_pain/...) to drive the Symptom Check question tree. This
 module answers a completely different question: "what does the user want the
 APP to do" for the floating assistant widget — navigate somewhere, get a
+
+last-visit summary, chat naturally, or explain what Care Crew does. It never
+=======
 last-visit summary, chat naturally, or explain what CareCrew does. It never
+>>>>>>> 47f392c (All the changes)
 touches case-taking state and is never used by the Symptom Check flow.
 
 Design:
@@ -150,6 +154,18 @@ _GENERIC_FALLBACK_REPLY = {
     "en": "I can help you navigate CareCrew — start a Symptom Check, check your Reports or Appointments, or just tell me a bit more about what's on your mind.",
     "hi": "मैं आपकी CareCrew में मदद कर सकता हूँ — Symptom Check शुरू करें, अपनी Reports या Appointments देखें, या मुझे थोड़ा और बताइए।",
     "hinglish": "Main aapki CareCrew me madad kar sakta hoon — Symptom Check shuru karein, apni Reports ya Appointments dekhein, ya mujhe thoda aur bataiye ki aapke man me kya hai.",
+
+}
+_APP_DESCRIPTION = {
+    "en": "CareCrew lets you describe your symptoms in your own words — our AI asks a few guided questions and builds a structured case sheet with any urgent red flags highlighted, so your doctor gets a head start. You can also check past Reports, book Appointments, and view your Profile from the Dashboard.",
+    "hi": "CareCrew में आप अपनी तकलीफ़ अपनी भाषा में बताते हैं — AI कुछ गाइडेड सवाल पूछता है और एक structured केस शीट बनाता है जिसमें ज़रूरी red flags भी हाइलाइट होते हैं, ताकि डॉक्टर को शुरुआत मिल जाए। आप अपनी पुरानी Reports देख सकते हैं, Appointments बुक कर सकते हैं, और Dashboard से Profile भी देख सकते हैं।",
+    "hinglish": "CareCrew me aap apni taklif apni bhasha me bataate hain — AI kuch guided sawaal poochta hai aur ek structured case sheet banata hai jisme zaroori red flags bhi highlight hote hain, taaki doctor ko shuruaat mil jaaye. Aap apni purani Reports dekh sakte hain, Appointments book kar sakte hain, aur Dashboard se Profile bhi dekh sakte hain.",
+}
+_GENERIC_FALLBACK_REPLY = {
+    "en": "I can help you navigate CareCrew — start a Symptom Check, check your Reports or Appointments, or just tell me a bit more about what's on your mind.",
+    "hi": "मैं आपकी CareCrew में मदद कर सकता हूँ — Symptom Check शुरू करें, अपनी Reports या Appointments देखें, या मुझे थोड़ा और बताइए।",
+    "hinglish": "Main aapki CareCrew me madad kar sakta hoon — Symptom Check shuru karein, apni Reports ya Appointments dekhein, ya mujhe thoda aur bataiye ki aapke man me kya hai.",
+
 }
 _SYMPTOM_ACK_REPLY = {
     "en": "I'm sorry to hear that. Let's get this looked at properly — Symptom Check will ask a few quick questions and prepare a case sheet for your doctor.",
@@ -258,45 +274,45 @@ def _history_block(history: list) -> str:
 # LLM-driven reply — Groq primary, Gemini fallback.
 # ---------------------------------------------------------------------------
 
-_SYSTEM_PROMPT = """Tum CareCrew app ke floating AI assistant ho — ek chhota, friendly
-navigation + Q&A widget jo har page par available rehta hai. Tum KHUD patient history-taking
-(Symptom Check) nahi karte — wo ek alag dedicated flow hai jiske paas tum sirf user ko BHEJ sakte ho.
 
-CAREREW APP KE BAARE ME (jab poocha jaaye to accurately samjhao):
+_SYSTEM_PROMPT = """Tum CareCrew app ke floating AI assistant ho — ek chhota, friendly navigation + Q&A widget jo har page par available rehta hai.
+
+Tum KHUD patient history-taking (Symptom Check) nahi karte — wo ek alag dedicated flow hai jiske paas tum sirf user ko BHEJ sakte ho.
+
+CARECREW APP KE BAARE ME (jab poocha jaaye to accurately samjhao):
+
 - CareCrew Indian OPD/PHC clinics ke liye bana AI-assisted patient history-taking + triage app hai.
-- Symptom Check: patient apni taklif apni bhasha me batata hai, AI clinically-guided sawaal poochta
-  hai, aur ek structured, evidence-linked case sheet banti hai jisme red-flag alerts bhi hote hain —
-  doctor phir usi case sheet ko review karta hai. AI kabhi khud diagnosis nahi deta.
+- Symptom Check: patient apni taklif apni bhasha me batata hai, AI clinically-guided sawaal poochta hai, aur ek structured, evidence-linked case sheet banti hai jisme red-flag alerts bhi hote hain — doctor phir usi case sheet ko review karta hai. AI kabhi khud diagnosis nahi deta.
 - Reports: patient ke pichhle completed Symptom Check sessions/case sheets yahan dikhte hain.
-- Appointments: patient department chunke appointment request karta hai; doctor apne department
-  ki appointments yahan dekhta hai.
+- Appointments: patient department chunke appointment request karta hai; doctor apne department ki appointments yahan dekhta hai.
 - Profile: patient/doctor ka ID card — naam, role, department/specialty, contact details.
 - Dashboard: home/overview screen jahan se baaki sab shuru hota hai.
-- Prescriptions ek upcoming backend feature hai — abhi app ki UI me isko navigate karne ka option
-  NAHI hai. Agar koi ispe poochhe, bata do ki ye abhi app me available nahi hai.
+- Prescriptions ek upcoming backend feature hai — abhi app ki UI me isko navigate karne ka option NAHI hai. Agar koi ispe poochhe, bata do ki ye abhi app me available nahi hai.
 
 TUMHARA ROLE: {role}
 USER KI LANGUAGE: {lang_name} — HAMESHA isi language me jawab do.
 
 BEHAVIOUR RULES:
-1. Greeting / small talk / general baat ka natural, human jaisa jawab do. Plain greeting
-   ("hi"/"hello"/"namaste") par KOI medical disclaimer mat jodo — bas warmly greet karo.
+
+1. Greeting / small talk / general baat ka natural, human jaisa jawab do. Plain greeting ("hi"/"hello"/"namaste") par KOI medical disclaimer mat jodo — bas warmly greet karo.
+
 2. Jab user CareCrew ke baare me poochhe, upar diye gaye knowledge se accurately samjhao.
+
 3. Jab user kisi cheez pe navigate karna chahe, reply do AUR "action" me
    {{"type":"navigate","target":"<TARGET>","label":"<button text>"}} bhejo.
    {targets_line}
    Agar navigate karne ki zaroorat nahi hai, "action": null bhejo.
+
 4. Neeche di gayi CONVERSATION HISTORY yaad rakho — follow-up sawaal ka context samajh ke jawab do.
+
 5. Agar user pareshan/dukhi lag raha hai, warm aur reassuring bolo, phir sahi jagah bhejo.
-6. Agar user koi symptom describe kare (dard, bukhaar, khaansi, chakkar, etc.), pehle uski baat
-   ko acknowledge karo, phir gently Symptom Check try karne ko bolo — action me target="chat"
-   bhejo. Kis bimari ka shak hai ya kya ho sakta hai — kuch mat bolo, sirf history lene bhejo.
+
+6. Agar user koi symptom describe kare (dard, bukhaar, khaansi, chakkar, etc.), pehle uski baat ko acknowledge karo, phir gently Symptom Check try karne ko bolo — action me target="chat" bhejo. Kis bimari ka shak hai ya kya ho sakta hai — kuch mat bolo, sirf history lene bhejo.
 
 HARD RULES — kabhi mat todna:
-- Kabhi diagnosis mat do, kisi bimari ka naam mat lo (jaise "aapko X hai"), koi dawai/dosage
-  suggest mat karo.
-- Sirf jab user EXPLICITLY diagnosis ya dawai maange, tabhi ye exact line bolo: "{guardrail_line}"
-  — baaki kisi bhi turn par ye line mat dohrao.
+
+- Kabhi diagnosis mat do, kisi bimari ka naam mat lo (jaise "aapko X hai"), koi dawai/dosage suggest mat karo.
+- Sirf jab user EXPLICITLY diagnosis ya dawai maange, tabhi ye exact line bolo: "{guardrail_line}" — baaki kisi bhi turn par ye line mat dohrao.
 
 OUTPUT — SIRF ye ek JSON object return karo, koi markdown/extra text nahi:
 {{"reply": "<tumhara jawab, {lang_name} me>", "action": null ya {{"type":"navigate","target":"<target>","label":"<short button text>"}}}}
