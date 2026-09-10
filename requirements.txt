@@ -1,1 +1,8 @@
-
+fastapi
+uvicorn[standard]
+reportlab
+google-generativeai
+groq
+redis
+psycopg2-binary
+python-dotenv
