@@ -505,15 +505,15 @@ The system can be further improved with:
 
 ### Final Presentation
 
-*Add your presentation link here.*
+*https://drive.google.com/file/d/1t_cx7WqYypGxSye5ldQ1-aE9nW1SndbV/view?usp=sharing*
 
 ### Demo Video
 
-*Add your demo video link here.*
+*https://drive.google.com/file/d/1vbU3av8Rz4HfNWV9kBAM2WK3eMOxOVR9/view?usp=drivesdk*
 
 ### Screenshots / Prototype
 
-*Add screenshots or prototype images here.*
+*screenshot upload*
 
 ---
 
