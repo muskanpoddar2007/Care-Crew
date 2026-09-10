@@ -67,6 +67,12 @@ const CareCrewAPI = {
   createAppointment(payload, token) {
     return apiRequest("/api/patients/me/appointments", { method: "POST", body: payload, token });
   },
+  triggerSOS(token) {
+    return apiRequest("/api/patients/me/sos", { method: "POST", body: {}, token });
+  },
+  listMyDoctors(token) {
+    return apiRequest("/api/patients/me/doctors", { token });
+  },
   listAppointments(token) {
     return apiRequest("/api/patients/me/appointments", { token });
   },
@@ -80,6 +86,40 @@ const CareCrewAPI = {
   // Doctor navigation-action destination — app/api/doctor_routes.py, auth required.
   listDoctorAppointments(token) {
     return apiRequest("/api/doctors/me/appointments", { token });
+  },
+  listDoctorNotifications(token) {
+    return apiRequest("/api/doctors/me/notifications", { token });
+  },
+
+  // Profile picture upload (multipart/form-data)
+  async uploadProfilePicture(file, token) {
+    const form = new FormData();
+    form.append("file", file);
+
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE}/api/auth/profile-picture`, {
+      method: "POST",
+      headers,
+      body: form,
+    });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {}
+
+    if (!res.ok) {
+      const detail = data && data.detail;
+      const message =
+        (data && data.message) ||
+        (detail && typeof detail === "object" && detail.message) ||
+        (typeof detail === "string" ? detail : null) ||
+        "Failed to upload profile picture.";
+      throw new Error(message);
+    }
+    return data;
   },
 
   // Floating AI Bot — app/api/bot_routes.py. Separate contract from the

@@ -81,6 +81,25 @@ _SLOT_HINTS = {
     "review_of_systems.lips_bluish": "Honth/ungliyaan neeli/pili padna? haan/nahi.",
     "review_of_systems.wheezing": "Seeti jaisi awaaz (wheezing)? haan/nahi.",
     "review_of_systems.cough": "Iske saath khaansi? haan/nahi.",
+    "review_of_systems.associated": "Saath mein saans phoolna, pasina, chakkar ya ulti jaisa.",
+
+    # Ayurveda Dynamic Core & Branching
+    "ayurveda.agni_appetite": "Daily appetite / bhookh (Strong, Variable, Low, Excessive).",
+    "ayurveda.agni_bowel": "Digestion aur pet saaf hona (Regular, Occasionally irregular, Often irregular).",
+    "ayurveda.sleep": "Neend ki quality aur daytime energy (Sound, Delay falling asleep, Wake up often, Wake up tired).",
+    "ayurveda.thermal": "Sensitivity to heat vs cold (More sensitive to heat, cold, or balanced).",
+    "ayurveda.joint_movement": "Joint/muscle pain chalne-firne ya rest se badhta hai (Worse with movement/rest).",
+    "ayurveda.morning_stiffness": "Subah uthne par joints mein akadpan/stiffness.",
+    "ayurveda.swelling": "Joints/muscle par koi visible sujan (swelling).",
+    "ayurveda.digestive_timing": "Khaane ke turant baad ya 2-3 ghante baad pet me takleef.",
+    "ayurveda.food_triggers": "Tel-masale, dairy ya kisi specific food se takleef badhna.",
+    "ayurveda.sensation_type": "Jalan, bhaari-pan, gas ya cramping.",
+    "ayurveda.skin_sensation": "Skin par jalan, khujli, dryness ya laal-pan.",
+    "ayurveda.flare_triggers": "Mausam badalne ya kisi khane se skin problem badhna.",
+    "ayurveda.racing_mind": "Raat ko dimaag me bohot thoughts aana ya bechaini.",
+    "ayurveda.stress_digestion": "Stress/tension ka pet ya digestion par asar.",
+    "ayurveda.duration_pattern": "Taklif kitne samay se hai (din, hafte, mahine).",
+    "ayurveda.remedies_tried": "Pehle koi gharelu upchaar ya dawai li hai.",
 }
 
 _MULTI_PROMPT = """Tum ek medical history extraction assistant ho. Patient ke EK jawab me

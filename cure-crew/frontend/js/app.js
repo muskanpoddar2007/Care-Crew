@@ -110,6 +110,31 @@
     fieldPhone: document.getElementById("field-phone"),
     fieldDepartment: document.getElementById("field-department"),
     fieldSpecialty: document.getElementById("field-specialty"),
+    authConsentWrap: document.getElementById("auth-consent-wrap"),
+    fieldConsent: document.getElementById("field-consent"),
+    errConsent: document.getElementById("err-consent"),
+    linkTermsConditions: document.getElementById("link-terms-conditions"),
+    pdfViewerModal: document.getElementById("pdf-viewer-modal"),
+    btnClosePdfModal: document.getElementById("btn-close-pdf-modal"),
+    btnClosePdfModalFooter: document.getElementById("btn-close-pdf-modal-footer"),
+
+    headerSosBtn: document.getElementById("btn-header-sos"),
+    avatarFileInput: document.getElementById("avatar-file-input"),
+    sosConfirmModal: document.getElementById("sos-confirm-modal"),
+    btnCloseSosModal: document.getElementById("btn-close-sos-modal"),
+    btnCancelSos: document.getElementById("btn-cancel-sos"),
+    btnConfirmSos: document.getElementById("btn-confirm-sos"),
+    sosSuccessModal: document.getElementById("sos-success-modal"),
+    btnCloseSosSuccess: document.getElementById("btn-close-sos-success"),
+    btnDoneSosSuccess: document.getElementById("btn-done-sos-success"),
+    sosAppointmentSummary: document.getElementById("sos-appointment-summary"),
+    doctorSosAlertBanner: document.getElementById("doctor-sos-alert-banner"),
+    doctorSosAlertMsg: document.getElementById("doctor-sos-alert-msg"),
+    btnViewSosAppointments: document.getElementById("btn-view-sos-appointments"),
+    viewMyDoctors: document.getElementById("view-my-doctors"),
+    myDoctorsBack: document.getElementById("my-doctors-back"),
+    myDoctorsError: document.getElementById("my-doctors-error"),
+    myDoctorsList: document.getElementById("my-doctors-list"),
   };
 
   // ---------- Sidebar / shell config ----------
@@ -118,6 +143,7 @@
     "symptom-check": '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><rect x="5" y="6" width="14" height="15" rx="2"/><path d="M9 13l2 2 4-4"/>',
     reports: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>',
     appointments: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    doctor: '<path d="M12 2a4 4 0 0 1 4 4v2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2V6a4 4 0 0 1 4-4z"/><path d="M12 12v6m-3-3h6"/>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     diagnosis: '<path d="M11 2v6a2 2 0 0 0 2 2h6"/><path d="M20 12v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9l5 5"/><path d="M9.5 14.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/>',
   };
@@ -129,6 +155,7 @@
       { key: "dashboard", label: "Home", icon: "dashboard", i18n: "nav_home" },
       { key: "chat", label: "Symptom Check & Book Appointment", icon: "symptom-check", i18n: "nav_symptom_check" },
       { key: "reports", label: "Case Sheet", icon: "reports", i18n: "nav_case_sheet" },
+      { key: "my_doctors", label: "My Doctor", icon: "doctor", i18n: "nav_my_doctor" },
       {
         key: "diagnosis", label: "Diagnosis", icon: "diagnosis", i18n: "nav_diagnosis", group: true,
         children: [
@@ -157,6 +184,7 @@
     appointments: els.viewAppointments,
     reports: els.viewReports,
     doctor_appointments: els.viewDoctorAppointments,
+    my_doctors: els.viewMyDoctors,
   };
 
   // ---------- View switching ----------
@@ -281,6 +309,8 @@
           openReports();
         } else if (item.key === "doctor_appointments") {
           openDoctorAppointments();
+        } else if (item.key === "my_doctors") {
+          openMyDoctors();
         } else if (item.key === "dashboard") {
           goToDashboardHome();
         } else {
@@ -311,6 +341,7 @@
     enterAuthMode();
     showAuthView(els.viewLanding);
     els.userChip.classList.add("hidden");
+    if (els.headerSosBtn) els.headerSosBtn.classList.add("hidden");
     els.mainContent.classList.add("main-content--landing");
     setHeaderLandingNav(true);
   }
@@ -324,10 +355,12 @@
     els.formSuccess.classList.add("hidden");
     clearFieldErrors();
     els.authForm.reset();
+    if (els.fieldConsent) els.fieldConsent.checked = false;
     syncAuthModeUI();
     enterAuthMode();
     showAuthView(els.viewAuth);
     els.userChip.classList.add("hidden");
+    if (els.headerSosBtn) els.headerSosBtn.classList.add("hidden");
     els.mainContent.classList.remove("main-content--landing");
     setHeaderLandingNav(false);
   }
@@ -343,6 +376,7 @@
     const i18n = window.CareCrewI18n;
     const isRegister = authMode === "register";
     const isDoctor = currentRole === "doctor";
+    const isPatientRegister = isRegister && !isDoctor;
 
     setRoleToggleUI(currentRole);
 
@@ -362,6 +396,15 @@
       el.classList.toggle("hidden", !isRegister || !isDoctor);
     });
 
+    if (els.authConsentWrap) {
+      els.authConsentWrap.classList.toggle("hidden", !isPatientRegister);
+    }
+    if (isPatientRegister) {
+      els.authSubmit.disabled = !els.fieldConsent.checked;
+    } else {
+      els.authSubmit.disabled = false;
+    }
+
     els.fieldName.required = isRegister;
     els.fieldConfirmPassword.required = isRegister;
 
@@ -375,8 +418,40 @@
     email: "err-email",
     password: "err-password",
     "confirm-password": "err-confirm-password",
+    consent: "err-consent",
   };
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const ABHA_RE = /^\d{14}$/;
+
+  function validateIdentifierRealtime(eventType) {
+    if (currentRole === "doctor") return;
+    const val = els.fieldIdentifier.value.trim();
+    const i18n = window.CareCrewI18n;
+    if (!val) {
+      if (eventType === "blur") {
+        setFieldError("identifier", i18n.t("err_abha_required"));
+      } else {
+        const errEl = document.getElementById(FIELD_ERROR_IDS.identifier);
+        if (errEl) errEl.textContent = "";
+        const f = els.fieldIdentifier.closest(".field");
+        if (f) f.classList.remove("has-error");
+      }
+      return;
+    }
+    // Reject any input that has non-digits or exceeds 14 digits immediately on input
+    if (!/^\d+$/.test(val) || val.length > 14) {
+      setFieldError("identifier", i18n.t("err_abha_invalid"));
+    } else if (val.length === 14) {
+      // Exactly 14 digits
+      const errEl = document.getElementById(FIELD_ERROR_IDS.identifier);
+      if (errEl) errEl.textContent = "";
+      const f = els.fieldIdentifier.closest(".field");
+      if (f) f.classList.remove("has-error");
+    } else if (eventType === "blur") {
+      // Under 14 digits on blur
+      setFieldError("identifier", i18n.t("err_abha_invalid"));
+    }
+  }
 
   function clearFieldErrors() {
     Object.values(FIELD_ERROR_IDS).forEach((id) => {
@@ -401,14 +476,18 @@
 
     const isRegister = authMode === "register";
     const isDoctor = currentRole === "doctor";
+    const identifier = els.fieldIdentifier.value.trim();
 
     if (isRegister && !els.fieldName.value.trim()) {
       setFieldError("name", i18n.t("err_name_required"));
       valid = false;
     }
 
-    if (!els.fieldIdentifier.value.trim()) {
+    if (!identifier) {
       setFieldError("identifier", i18n.t(isDoctor ? "err_doctor_id_required" : "err_abha_required"));
+      valid = false;
+    } else if (!isDoctor && !ABHA_RE.test(identifier)) {
+      setFieldError("identifier", i18n.t("err_abha_invalid"));
       valid = false;
     }
 
@@ -427,6 +506,11 @@
 
     if (isRegister && els.fieldConfirmPassword.value !== els.fieldPassword.value) {
       setFieldError("confirm-password", i18n.t("err_confirm_mismatch"));
+      valid = false;
+    }
+
+    if (isRegister && !isDoctor && (!els.fieldConsent || !els.fieldConsent.checked)) {
+      setFieldError("consent", i18n.t("err_consent_required"));
       valid = false;
     }
 
@@ -532,10 +616,15 @@
 
   function setAvatar(avatarEl, user) {
     avatarEl.innerHTML = "";
-    if (user.photo_url) {
+    if (user && user.photo_url) {
       const img = document.createElement("img");
-      img.src = user.photo_url;
-      img.alt = user.name;
+      let src = user.photo_url;
+      if (src && src.startsWith("/") && !src.startsWith("//")) {
+        const base = window.CARECREW_API_BASE || "http://localhost:8000";
+        src = `${base}${src}`;
+      }
+      img.src = src;
+      img.alt = (user && user.name) || "User";
       img.className = "avatar";
       img.style.width = "100%";
       img.style.height = "100%";
@@ -543,7 +632,7 @@
       img.style.objectFit = "cover";
       avatarEl.appendChild(img);
     } else {
-      avatarEl.textContent = initials(user.name);
+      avatarEl.textContent = initials((user && user.name) || "");
     }
   }
 
@@ -559,7 +648,12 @@
     card.className = isDoctor ? "neu-card id-card" : "flat-card id-card";
 
     const avatar = document.createElement("div");
-    avatar.className = "avatar";
+    avatar.className = "avatar avatar-clickable";
+    avatar.title = "Click to change photo";
+    avatar.style.cursor = "pointer";
+    avatar.addEventListener("click", () => {
+      if (els.avatarFileInput) els.avatarFileInput.click();
+    });
     card.appendChild(avatar);
 
     const h2 = document.createElement("h2");
@@ -618,6 +712,14 @@
 
     const isDoctor = user.role === "doctor";
 
+    // SOS button in header is for patients only; doctors see notification alert
+    if (els.headerSosBtn) els.headerSosBtn.classList.toggle("hidden", isDoctor);
+    if (isDoctor) {
+      loadDoctorNotifications(token);
+    } else {
+      if (els.doctorSosAlertBanner) els.doctorSosAlertBanner.classList.add("hidden");
+    }
+
     // Doctor dashboard is untouched: still gets the full ID card up top.
     // Patient home replaces it with the redesigned overview below.
     els.dashboardIdCard.classList.toggle("hidden", !isDoctor);
@@ -673,6 +775,8 @@
         }
       } else if (target === "reports") {
         openReports();
+      } else if (target === "my_doctors") {
+        openMyDoctors();
       } else if (target === "doctor_appointments") {
         openDoctorAppointments();
       } else if (target === "chat") {
@@ -847,6 +951,9 @@
     list.forEach((a) => {
       const row = document.createElement("div");
       row.className = "list-item";
+      if (a.is_sos || a.type === "sos") {
+        row.classList.add("list-item--sos");
+      }
 
       const main = document.createElement("div");
       main.className = "list-item-main";
@@ -855,12 +962,18 @@
       title.textContent = a.department;
       const meta = document.createElement("span");
       meta.className = "list-item-meta";
-      meta.textContent = `${a.preferred_date || "No date given"} · ${a.status}${a.note ? " · " + a.note : ""}`;
+      const patText = a.patient_name ? `Patient: ${a.patient_name} · ` : "";
+      meta.textContent = `${patText}${a.preferred_date || "Immediate"} · ${a.status}${a.note ? " · " + a.note : ""}`;
       main.appendChild(title);
       main.appendChild(meta);
       row.appendChild(main);
 
-      if (a.urgent) {
+      if (a.is_sos || a.type === "sos") {
+        const badge = document.createElement("span");
+        badge.className = "urgent-sos-tag";
+        badge.textContent = "EMERGENCY SOS";
+        row.appendChild(badge);
+      } else if (a.urgent) {
         const badge = document.createElement("span");
         badge.className = "role-badge urgent";
         badge.textContent = "Urgent";
@@ -879,6 +992,118 @@
     } catch (err) {
       els.doctorAppointmentsError.textContent = err.message;
       els.doctorAppointmentsError.classList.remove("hidden");
+    }
+  }
+
+  // ---------- Doctor Notifications (SOS alerts) ----------
+  async function loadDoctorNotifications(token) {
+    if (!els.doctorSosAlertBanner) return;
+    try {
+      const res = await CareCrewAPI.listDoctorNotifications(token);
+      const data = res.data || {};
+      const count = data.urgent_count || (data.notifications && data.notifications.length) || 0;
+      if (count > 0) {
+        els.doctorSosAlertBanner.classList.remove("hidden");
+        if (els.doctorSosAlertMsg) {
+          els.doctorSosAlertMsg.textContent = `${count} Emergency SOS alert(s) reported by patients in your department.`;
+        }
+      } else {
+        els.doctorSosAlertBanner.classList.add("hidden");
+      }
+    } catch (err) {
+      els.doctorSosAlertBanner.classList.add("hidden");
+    }
+  }
+
+  // ---------- My Doctors ----------
+  function openMyDoctors() {
+    els.myDoctorsError.classList.add("hidden");
+    showShellView("my_doctors");
+    loadMyDoctors();
+  }
+
+  function renderMyDoctors(list) {
+    els.myDoctorsList.innerHTML = "";
+    if (!list || !list.length) {
+      const p = document.createElement("p");
+      p.className = "list-empty";
+      p.setAttribute("data-i18n", "my_doctors_empty");
+      p.textContent = window.CareCrewI18n ? window.CareCrewI18n.t("my_doctors_empty") : "No assigned doctors found.";
+      els.myDoctorsList.appendChild(p);
+      return;
+    }
+
+    list.forEach((doc) => {
+      const card = document.createElement("div");
+      card.className = "doctor-assigned-card";
+
+      const header = document.createElement("div");
+      header.className = "doctor-assigned-header";
+
+      const avatar = document.createElement("div");
+      avatar.className = "doctor-assigned-avatar";
+      setAvatar(avatar, { name: doc.name, photo_url: doc.photo_url, role: "doctor" });
+
+      const info = document.createElement("div");
+      info.className = "doctor-assigned-info";
+      const name = document.createElement("h3");
+      name.className = "doctor-assigned-name";
+      name.textContent = `Dr. ${doc.name}`;
+
+      const spec = document.createElement("p");
+      spec.className = "doctor-assigned-spec";
+      spec.textContent = `${doc.specialisation || "Physician"} · ${doc.department || "General Medicine"}`;
+
+      info.appendChild(name);
+      info.appendChild(spec);
+      header.appendChild(avatar);
+      header.appendChild(info);
+      card.appendChild(header);
+
+      const meta = document.createElement("div");
+      meta.className = "doctor-assigned-meta";
+
+      const hosp = document.createElement("div");
+      hosp.className = "doctor-assigned-meta-row";
+      const hospLabel = document.createElement("span");
+      hospLabel.className = "meta-label";
+      hospLabel.textContent = (window.CareCrewI18n ? window.CareCrewI18n.t("my_doctors_hospital") : "Hospital") + ": ";
+      const hospVal = document.createElement("span");
+      hospVal.className = "meta-val";
+      hospVal.textContent = doc.hospital_name || "Care Crew Central Hospital";
+      hosp.appendChild(hospLabel);
+      hosp.appendChild(hospVal);
+      meta.appendChild(hosp);
+
+      const contactNum = doc.hospital_contact || doc.phone;
+      if (contactNum) {
+        const contact = document.createElement("div");
+        contact.className = "doctor-assigned-meta-row";
+        const contactLabel = document.createElement("span");
+        contactLabel.className = "meta-label";
+        contactLabel.textContent = (window.CareCrewI18n ? window.CareCrewI18n.t("my_doctors_contact") : "Contact") + ": ";
+        const contactVal = document.createElement("a");
+        contactVal.href = `tel:${contactNum}`;
+        contactVal.className = "meta-val doctor-phone-link";
+        contactVal.textContent = contactNum;
+        contact.appendChild(contactLabel);
+        contact.appendChild(contactVal);
+        meta.appendChild(contact);
+      }
+
+      card.appendChild(meta);
+      els.myDoctorsList.appendChild(card);
+    });
+  }
+
+  async function loadMyDoctors() {
+    try {
+      const token = window.CareCrewSession.getToken();
+      const res = await CareCrewAPI.listMyDoctors(token);
+      renderMyDoctors(res.data || []);
+    } catch (err) {
+      els.myDoctorsError.textContent = err.message;
+      els.myDoctorsError.classList.remove("hidden");
     }
   }
 
@@ -941,6 +1166,65 @@
 
   els.authLangSelect.addEventListener("change", () => {
     window.CareCrewI18n.setLang(els.authLangSelect.value);
+  });
+
+  els.fieldIdentifier.addEventListener("input", () => validateIdentifierRealtime("input"));
+  els.fieldIdentifier.addEventListener("blur", () => validateIdentifierRealtime("blur"));
+
+  if (els.fieldConsent) {
+    els.fieldConsent.addEventListener("change", () => {
+      const errEl = document.getElementById(FIELD_ERROR_IDS.consent);
+      if (errEl) errEl.textContent = "";
+      const f = els.fieldConsent.closest(".field");
+      if (f) f.classList.remove("has-error");
+
+      if (authMode === "register" && currentRole === "patient") {
+        els.authSubmit.disabled = !els.fieldConsent.checked;
+      }
+    });
+  }
+
+  function openPdfModal() {
+    if (els.pdfViewerModal) {
+      els.pdfViewerModal.classList.remove("hidden");
+    }
+  }
+
+  function closePdfModal() {
+    if (els.pdfViewerModal) {
+      els.pdfViewerModal.classList.add("hidden");
+    }
+  }
+
+  if (els.linkTermsConditions) {
+    els.linkTermsConditions.addEventListener("click", (e) => {
+      e.preventDefault();
+      openPdfModal();
+    });
+  }
+  if (els.btnClosePdfModal) {
+    els.btnClosePdfModal.addEventListener("click", closePdfModal);
+  }
+  if (els.btnClosePdfModalFooter) {
+    els.btnClosePdfModalFooter.addEventListener("click", closePdfModal);
+  }
+  if (els.pdfViewerModal) {
+    els.pdfViewerModal.addEventListener("click", (e) => {
+      if (e.target === els.pdfViewerModal) closePdfModal();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (els.pdfViewerModal && !els.pdfViewerModal.classList.contains("hidden")) {
+        closePdfModal();
+      }
+      if (els.sosConfirmModal && !els.sosConfirmModal.classList.contains("hidden")) {
+        closeSosConfirmModal();
+      }
+      if (els.sosSuccessModal && !els.sosSuccessModal.classList.contains("hidden")) {
+        closeSosSuccessModal();
+      }
+    }
   });
 
   function syncThemeIcons() {
@@ -1016,12 +1300,14 @@
     els.apptSubmit.disabled = true;
     try {
       const token = window.CareCrewSession.getToken();
+      const caseSheetId = (window.CareCrewChat && window.CareCrewChat.getSessionId) ? window.CareCrewChat.getSessionId() : null;
       const res = await CareCrewAPI.createAppointment(
         {
           department: els.apptDepartment.value,
           preferred_date: els.apptDate.value || null,
           note: els.apptNote.value.trim() || null,
           urgent: els.apptUrgent.checked,
+          case_sheet_id: caseSheetId,
         },
         token
       );
@@ -1039,6 +1325,150 @@
       els.apptSubmit.disabled = false;
     }
   });
+
+  // ---------- My Doctors Back ----------
+  if (els.myDoctorsBack) {
+    els.myDoctorsBack.addEventListener("click", goToDashboardHome);
+  }
+
+  // ---------- Doctor SOS Banner Action ----------
+  if (els.btnViewSosAppointments) {
+    els.btnViewSosAppointments.addEventListener("click", () => {
+      openDoctorAppointments();
+    });
+  }
+
+  // ---------- Emergency SOS Handlers ----------
+  function closeSosConfirmModal() {
+    if (els.sosConfirmModal) els.sosConfirmModal.classList.add("hidden");
+  }
+
+  function closeSosSuccessModal() {
+    if (els.sosSuccessModal) els.sosSuccessModal.classList.add("hidden");
+    goToDashboardHome();
+  }
+
+  if (els.headerSosBtn) {
+    els.headerSosBtn.addEventListener("click", () => {
+      if (els.sosConfirmModal) els.sosConfirmModal.classList.remove("hidden");
+    });
+  }
+
+  if (els.btnCloseSosModal) els.btnCloseSosModal.addEventListener("click", closeSosConfirmModal);
+  if (els.btnCancelSos) els.btnCancelSos.addEventListener("click", closeSosConfirmModal);
+  if (els.sosConfirmModal) {
+    els.sosConfirmModal.addEventListener("click", (e) => {
+      if (e.target === els.sosConfirmModal) closeSosConfirmModal();
+    });
+  }
+
+  if (els.btnConfirmSos) {
+    els.btnConfirmSos.addEventListener("click", async () => {
+      els.btnConfirmSos.disabled = true;
+      els.btnConfirmSos.textContent = "...";
+      try {
+        const token = window.CareCrewSession.getToken();
+        const res = await CareCrewAPI.triggerSOS(token);
+        closeSosConfirmModal();
+
+        const data = res.data || {};
+        const appt = data.appointment || {};
+        const doc = data.doctor || {};
+
+        if (els.sosAppointmentSummary) {
+          els.sosAppointmentSummary.innerHTML = "";
+          const summaryList = document.createElement("div");
+          summaryList.className = "sos-summary-details";
+
+          const rows = [
+            ["Appointment Ref", `#${appt.id || "SOS"}`],
+            ["Status", (appt.status || "confirmed").toUpperCase()],
+            ["Attending Doctor", doc.name ? `Dr. ${doc.name}` : (appt.doctor_name || "Emergency On-Duty Physician")],
+            ["Department", doc.department || appt.department || "Emergency Medicine"],
+            ["Emergency Helpline", data.emergency_helpline || "112"],
+            ["Hospital Desk", data.hospital_contact || "+91-11-26588500"],
+          ];
+
+          rows.forEach(([k, v]) => {
+            const item = document.createElement("div");
+            item.className = "sos-summary-row";
+            const dt = document.createElement("span");
+            dt.className = "sos-summary-k";
+            dt.textContent = k;
+            const dd = document.createElement("span");
+            dd.className = "sos-summary-v";
+            dd.textContent = v;
+            item.appendChild(dt);
+            item.appendChild(dd);
+            summaryList.appendChild(item);
+          });
+          els.sosAppointmentSummary.appendChild(summaryList);
+        }
+
+        if (els.sosSuccessModal) els.sosSuccessModal.classList.remove("hidden");
+      } catch (err) {
+        alert(err.message || "Failed to trigger SOS alert.");
+      } finally {
+        els.btnConfirmSos.disabled = false;
+        els.btnConfirmSos.textContent = window.CareCrewI18n ? window.CareCrewI18n.t("btn_sos_confirm") : "Send SOS Immediately";
+      }
+    });
+  }
+
+  if (els.btnCloseSosSuccess) els.btnCloseSosSuccess.addEventListener("click", closeSosSuccessModal);
+  if (els.btnDoneSosSuccess) els.btnDoneSosSuccess.addEventListener("click", closeSosSuccessModal);
+  if (els.sosSuccessModal) {
+    els.sosSuccessModal.addEventListener("click", (e) => {
+      if (e.target === els.sosSuccessModal) closeSosSuccessModal();
+    });
+  }
+
+  // ---------- Profile Picture Upload Handlers ----------
+  if (els.userChipAvatar) {
+    els.userChipAvatar.addEventListener("click", () => {
+      if (els.avatarFileInput) els.avatarFileInput.click();
+    });
+  }
+
+  if (els.avatarFileInput) {
+    els.avatarFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      e.target.value = "";
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      const allowedExts = ["jpg", "jpeg", "png", "webp"];
+
+      if (!allowedTypes.includes(file.type) && !allowedExts.includes(ext)) {
+        alert(window.CareCrewI18n ? window.CareCrewI18n.t("err_file_type") : "Only JPG, PNG, and WebP images are allowed.");
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(window.CareCrewI18n ? window.CareCrewI18n.t("err_file_size") : "File size must be under 5 MB.");
+        return;
+      }
+
+      try {
+        const token = window.CareCrewSession.getToken();
+        const res = await CareCrewAPI.uploadProfilePicture(file, token);
+        const updatedUser = (res.data && res.data.user) || res.data || res;
+        if (updatedUser) {
+          saveSession(token, updatedUser);
+          setAvatar(els.userChipAvatar, updatedUser);
+          setAvatar(els.sidebarProfileAvatar, updatedUser);
+          renderIdCard(els.profileIdCard, updatedUser);
+          if (updatedUser.role === "doctor") {
+            renderIdCard(els.dashboardIdCard, updatedUser);
+          }
+        }
+      } catch (err) {
+        alert(err.message || "Failed to upload profile picture.");
+      }
+    });
+  }
 
   els.logoutBtn.addEventListener("click", () => {
     clearSession();
@@ -1076,6 +1506,7 @@
           payload.specialty = els.fieldSpecialty.value.trim() || null;
         } else {
           payload.abha_id = identifier;
+          payload.consent = !!(els.fieldConsent && els.fieldConsent.checked);
         }
 
         await CareCrewAPI.register(payload);
@@ -1085,6 +1516,7 @@
         els.formSuccess.textContent = `${i18n.t("register_success_title")} ${i18n.t("register_success_body")}`;
         els.formSuccess.classList.remove("hidden");
         authMode = "login";
+        if (els.fieldConsent) els.fieldConsent.checked = false;
         syncAuthModeUI();
         els.fieldIdentifier.value = identifier;
       } else {
@@ -1099,7 +1531,6 @@
       els.formError.textContent = describeAuthError(err);
       els.formError.classList.remove("hidden");
     } finally {
-      els.authSubmit.disabled = false;
       els.authSubmit.classList.remove("is-loading");
       syncAuthModeUI();
     }

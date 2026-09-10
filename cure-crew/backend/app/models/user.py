@@ -29,6 +29,8 @@ class User(BaseModel):
     abha_id: Optional[str] = None       # patient login identifier
     doctor_id: Optional[str] = None     # doctor login identifier
     photo_url: Optional[str] = None
+    consent: bool = True
+    consent_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -45,6 +47,8 @@ class UserPublic(BaseModel):
     abha_id: Optional[str] = None
     doctor_id: Optional[str] = None
     photo_url: Optional[str] = None
+    consent: Optional[bool] = None
+    consent_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
@@ -60,6 +64,7 @@ class UserRegister(BaseModel):
     abha_id: Optional[str] = None       # required for role=patient (checked in the route)
     doctor_id: Optional[str] = None     # required for role=doctor (checked in the route)
     photo_url: Optional[str] = None
+    consent: bool = False
 
 
 class UserLogin(BaseModel):
@@ -68,6 +73,7 @@ class UserLogin(BaseModel):
     before this field existed keep working."""
     identifier: str
     password: str
+    role: Optional[str] = None
 
 
 user_store = KeyValueStore("user", User)

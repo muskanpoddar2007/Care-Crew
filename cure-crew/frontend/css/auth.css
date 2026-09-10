@@ -319,6 +319,202 @@
   cursor: default;
 }
 
+/* ===== Consent Checkbox & Terms Link ===== */
+.auth-consent-field {
+  margin-top: 14px;
+  margin-bottom: 8px;
+}
+
+.auth-consent-field .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-consent-field input[type="checkbox"] {
+  margin-top: 2px;
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.auth-terms-link {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.auth-terms-link:hover {
+  opacity: 0.8;
+}
+
+/* Disabled button state when consent is not checked */
+#auth-submit:disabled,
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(40%);
+  box-shadow: none;
+}
+
+/* ===== Terms and Conditions PDF Viewer Modal ===== */
+.pdf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 32, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: pdfFadeIn 0.2s ease-out;
+}
+
+@keyframes pdfFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pdf-modal-card {
+  width: 100%;
+  max-width: 880px;
+  height: 88vh;
+  max-height: 850px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.pdf-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  gap: 16px;
+}
+
+.pdf-modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-primary);
+  min-width: 0;
+}
+
+.pdf-modal-header-title svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.pdf-modal-header-title h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pdf-modal-external-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pdf-modal-external-link:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-accent);
+}
+
+.pdf-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pdf-modal-close:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-danger);
+}
+
+.pdf-modal-body {
+  flex: 1;
+  background: #525659;
+  min-height: 0;
+}
+
+.pdf-viewer-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.pdf-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 14px 24px;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.pdf-modal-footer .neu-btn {
+  background: var(--neu-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pdf-modal-footer .neu-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border-color: var(--color-accent);
+}
+
 /* ===== Responsive: collapse to branding-then-login on small screens ===== */
 @media (max-width: 900px) {
   .auth-split {

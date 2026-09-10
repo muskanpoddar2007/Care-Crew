@@ -41,6 +41,15 @@
         ["personal_history.tobacco", "Tambaku/beedi/gutka / तंबाकू"],
       ],
     },
+    {
+      title: "Ayurveda Core / आयुर्वेदिक मूल जानकारी",
+      slots: [
+        ["review_of_systems.ayurveda_agni_appetite", "Agni (Appetite) / भूख व अग्नि"],
+        ["review_of_systems.ayurveda_agni_bowel", "Agni (Bowel) / पाचन व शौच"],
+        ["review_of_systems.ayurveda_sleep", "Sleep Quality / निद्रा"],
+        ["review_of_systems.ayurveda_thermal", "Thermal Preference / तापीय संवेदनशीलता"],
+      ],
+    },
   ];
 
   const KNOWN_ROS_KEYS = new Set(
@@ -64,6 +73,7 @@
   let currentStep = 1;
   let chatTranscript = [];
   let busy = false;
+  let bookedAppointment = null;
 
   function humanizeKey(key) {
     return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -84,6 +94,7 @@
     els.banner = document.getElementById("urgent-banner");
     els.bannerFlags = document.getElementById("urgent-banner-flags");
     els.messages = document.getElementById("chat-messages");
+    els.quickReplies = document.getElementById("chat-quick-replies");
     els.form = document.getElementById("chat-form");
     els.input = document.getElementById("chat-input");
     els.send = document.getElementById("chat-send");
@@ -133,6 +144,7 @@
         isComplete,
         finalSheetData,
         chatTranscript,
+        bookedAppointment,
       };
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
@@ -222,6 +234,10 @@
     if (sessionId) {
       loadSummary("patient");
     }
+
+    const btnText = bookedAppointment ? "View Booked Appointment →" : "Continue to Book Appointment →";
+    if (els.btnContinueToBooking) els.btnContinueToBooking.textContent = btnText;
+    if (els.btnContinueToBookingBottom) els.btnContinueToBookingBottom.textContent = btnText;
   }
 
   function setupStep3View() {
@@ -251,11 +267,63 @@
       els.apptDate.min = today;
       if (!els.apptDate.value) els.apptDate.value = today;
     }
+
+    // Check if appointment is already booked for this session
+    let lockedBanner = document.getElementById("booking-locked-banner");
+    if (bookedAppointment) {
+      if (!lockedBanner && els.stage3) {
+        lockedBanner = document.createElement("div");
+        lockedBanner.id = "booking-locked-banner";
+        lockedBanner.className = "booking-locked-banner";
+        const formCard = els.stage3.querySelector(".flat-card");
+        if (formCard) {
+          formCard.parentNode.insertBefore(lockedBanner, formCard);
+        } else {
+          els.stage3.prepend(lockedBanner);
+        }
+      }
+
+      if (lockedBanner) {
+        lockedBanner.classList.remove("hidden");
+        lockedBanner.innerHTML = `
+          <div class="booking-locked-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1b9c97" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span data-i18n="appt_already_booked_title">Appointment Already Booked</span>
+          </div>
+          <p class="booking-locked-desc" data-i18n="appt_already_booked_desc">An appointment has already been booked for this case sheet. Only one booking is allowed per symptom-check session.</p>
+          <div class="booking-locked-actions">
+            <button type="button" id="btn-view-locked-details" class="btn-primary btn-inline">View Confirmation Details</button>
+            <button type="button" id="btn-start-fresh-from-locked" class="neu-btn">Start Fresh Symptom Check</button>
+          </div>
+        `;
+        document.getElementById("btn-view-locked-details").addEventListener("click", () => showConfirmation(bookedAppointment));
+        document.getElementById("btn-start-fresh-from-locked").addEventListener("click", () => start());
+        if (window.CareCrewI18n) window.CareCrewI18n.applyToDOM();
+      }
+
+      if (els.apptSubmit) els.apptSubmit.disabled = true;
+      if (els.appointmentForm) {
+        Array.from(els.appointmentForm.elements).forEach((el) => {
+          el.disabled = true;
+        });
+      }
+    } else {
+      if (lockedBanner) lockedBanner.classList.add("hidden");
+      if (els.apptSubmit) els.apptSubmit.disabled = false;
+      if (els.appointmentForm) {
+        Array.from(els.appointmentForm.elements).forEach((el) => {
+          el.disabled = false;
+        });
+      }
+    }
   }
 
   function showConfirmation(appt) {
     cacheEls();
     isComplete = true;
+    bookedAppointment = appt;
+    saveWorkflowState();
+
     if (els.confirmationDetails) {
       els.confirmationDetails.innerHTML = "";
       const rows = [
@@ -475,6 +543,36 @@
     if (els.send) els.send.disabled = state;
   }
 
+  function clearQuickReplies() {
+    if (els.quickReplies) {
+      els.quickReplies.innerHTML = "";
+      els.quickReplies.classList.add("hidden");
+    }
+  }
+
+  function renderQuickReplies(options) {
+    clearQuickReplies();
+    if (!els.quickReplies || !Array.isArray(options) || options.length === 0) return;
+
+    els.quickReplies.innerHTML = "";
+    options.forEach((opt) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chat-quick-reply-btn";
+      btn.textContent = opt;
+      btn.addEventListener("click", () => {
+        clearQuickReplies();
+        submitAnswer(opt);
+      });
+      els.quickReplies.appendChild(btn);
+    });
+    els.quickReplies.classList.remove("hidden");
+
+    if (els.messages) {
+      els.messages.scrollTop = els.messages.scrollHeight;
+    }
+  }
+
   function resetUI() {
     cacheEls();
     if (els.messages) els.messages.innerHTML = "";
@@ -483,6 +581,7 @@
     if (els.banner) els.banner.classList.add("hidden");
     if (els.error) els.error.classList.add("hidden");
     if (els.form) els.form.classList.remove("hidden");
+    clearQuickReplies();
     renderCaseSheet(els.live, {});
   }
 
@@ -508,6 +607,7 @@
       sessionId = res.session_id;
       currentSlot = res.next_slot;
       addMessage("agent", res.next_question);
+      renderQuickReplies(res.quick_replies);
       updateBanner(res.is_urgent, []);
       saveWorkflowState();
     } catch (err) {
@@ -535,6 +635,7 @@
   }
 
   async function submitAnswer(text) {
+    clearQuickReplies();
     addMessage("patient", text);
     clearError();
     setBusy(true);
@@ -554,9 +655,11 @@
 
       if (res.is_complete) {
         addMessage("agent", res.next_question || "Thank you — your clinical history is complete. Preparing your case sheet...");
+        clearQuickReplies();
         await finish();
       } else {
         addMessage("agent", res.next_question);
+        renderQuickReplies(res.quick_replies);
         saveWorkflowState();
       }
 
@@ -692,6 +795,15 @@
     showConfirmation,
     isWorkflowComplete() {
       return Boolean(isComplete);
+    },
+    getSessionId() {
+      return sessionId;
+    },
+    hasBookedSession() {
+      return Boolean(bookedAppointment);
+    },
+    getBookedAppointment() {
+      return bookedAppointment;
     },
     renderCaseSheet,
   };

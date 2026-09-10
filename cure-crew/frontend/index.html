@@ -32,6 +32,7 @@
       <div class="header-actions">
         <button type="button" id="header-login-btn" class="header-nav-link hidden">Login</button>
         <button type="button" id="header-get-started-btn" class="header-nav-cta hidden">Get Started</button>
+        <button type="button" id="btn-header-sos" class="btn-sos hidden" title="Emergency SOS" aria-label="Emergency SOS" data-i18n="btn_sos">SOS</button>
         <select id="header-lang-select" class="header-lang-select" aria-label="Language">
           <option value="en">EN</option>
           <option value="hi">हिंदी</option>
@@ -39,10 +40,11 @@
         </select>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
         <div id="user-chip" class="user-chip hidden">
-          <div id="user-chip-avatar" class="user-chip-avatar"></div>
+          <div id="user-chip-avatar" class="user-chip-avatar" title="Click to change profile photo" role="button" tabindex="0"></div>
           <span id="user-chip-name"></span>
           <button id="logout-btn" class="btn-link">Log out</button>
         </div>
+        <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" aria-label="Upload profile picture" />
       </div>
     </header>
 
@@ -321,6 +323,17 @@
                   <span class="field-error" id="err-confirm-password"></span>
                 </div>
 
+                <div class="field register-only hidden auth-consent-field" id="auth-consent-wrap">
+                  <label class="checkbox-label" for="field-consent">
+                    <input type="checkbox" id="field-consent" />
+                    <span id="consent-label-text">
+                      <span data-i18n="consent_label_pre">I consent to share my information with CareCrew, having read and understood the</span>
+                      <a href="#" id="link-terms-conditions" class="auth-terms-link" data-i18n="consent_terms_link">Terms and Conditions</a>.
+                    </span>
+                  </label>
+                  <span class="field-error" id="err-consent"></span>
+                </div>
+
                 <button type="submit" id="auth-submit" class="btn-primary" data-i18n="btn_login">Log In</button>
               </form>
 
@@ -397,9 +410,53 @@
               <h3 class="dashboard-section-title" data-i18n="recent_activity_title">Recent Health Activity</h3>
               <div id="recent-activity-list" class="list-body">Loading…</div>
             </div>
+
+            <!-- Emergency numbers footer (patient homepage) -->
+            <div class="dashboard-section emergency-numbers-section" id="emergency-numbers-footer">
+              <div class="emergency-numbers-band">
+                <div class="emergency-band-header">
+                  <div class="emergency-band-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  </div>
+                  <div>
+                    <h3 class="emergency-band-title" data-i18n="emergency_footer_title">Emergency Contacts & Helplines</h3>
+                    <p class="emergency-band-subtitle">Immediate 24/7 medical & emergency phone assistance across India.</p>
+                  </div>
+                </div>
+                <div class="emergency-numbers-grid">
+                  <a href="tel:112" class="emergency-number-card">
+                    <span class="emergency-number-code">112</span>
+                    <span class="emergency-number-label" data-i18n="emergency_112_label">National Emergency Number</span>
+                  </a>
+                  <a href="tel:01123978046" class="emergency-number-card">
+                    <span class="emergency-number-code">011-23978046</span>
+                    <span class="emergency-number-label" data-i18n="emergency_delhi_label">Delhi Health Helpline / Control Room</span>
+                  </a>
+                  <a href="tel:102" class="emergency-number-card">
+                    <span class="emergency-number-code">102</span>
+                    <span class="emergency-number-label" data-i18n="emergency_cats_label">CATS Ambulance</span>
+                  </a>
+                  <a href="tel:01126593677" class="emergency-number-card">
+                    <span class="emergency-number-code">011-26593677</span>
+                    <span class="emergency-number-label" data-i18n="emergency_poison_label">National Poison Information Centre, AIIMS</span>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div id="dashboard-doctor-actions" class="hidden">
+            <div id="doctor-sos-alert-banner" class="doctor-sos-banner hidden">
+              <div class="doctor-sos-banner-left">
+                <span class="doctor-sos-pulsing-dot" aria-hidden="true"></span>
+                <div>
+                  <h3 class="doctor-sos-title" data-i18n="doctor_sos_alert_title">Immediate attention required</h3>
+                  <p class="doctor-sos-desc" id="doctor-sos-alert-msg" data-i18n="doctor_sos_alert_desc">Emergency SOS alert(s) reported by patients in your department.</p>
+                </div>
+              </div>
+              <button type="button" id="btn-view-sos-appointments" class="btn-sos-review">View Emergency Appointments →</button>
+            </div>
+
             <div class="flat-card">
               <h3 style="margin-top:0;">Today's Appointments</h3>
               <p style="color:var(--color-text-muted);">View appointment requests routed to your department.</p>
@@ -480,6 +537,7 @@
             <div class="chat-layout">
               <div class="chat-panel flat-card">
                 <div id="chat-messages" class="chat-messages"></div>
+                <div id="chat-quick-replies" class="chat-quick-replies hidden"></div>
 
                 <form id="chat-form" class="chat-input-row">
                   <input type="text" id="chat-input" placeholder="Type your answer..." autocomplete="off" />
@@ -632,6 +690,17 @@
           </div>
         </section>
 
+        <!-- My Doctors view -->
+        <section id="view-my-doctors" class="view hidden">
+          <button type="button" id="my-doctors-back" class="back-link">&larr; Back to dashboard</button>
+          <div class="dash-header">
+            <h1 data-i18n="my_doctors_title">My Doctor</h1>
+            <p data-i18n="my_doctors_subtitle">Doctors currently assigned to your care and consultation history.</p>
+          </div>
+          <div id="my-doctors-error" class="form-error hidden"></div>
+          <div id="my-doctors-list" class="doctors-cards-grid"></div>
+        </section>
+
       </div>
 
       <button type="button" id="ai-bot-fab" class="ai-bot-fab" title="AI Assistant" aria-label="Open AI Assistant">
@@ -666,6 +735,73 @@
           <input type="text" id="bot-input" placeholder="Type a message..." autocomplete="off" />
           <button type="submit" id="bot-send-btn" class="btn-primary btn-inline bot-send-btn">Send</button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms and Conditions / Patient Data Consent PDF Viewer Modal -->
+  <div id="pdf-viewer-modal" class="pdf-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pdf-modal-title">
+    <div class="pdf-modal-card">
+      <div class="pdf-modal-header">
+        <div class="pdf-modal-header-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <h3 id="pdf-modal-title" data-i18n="pdf_modal_title">Patient Data Consent — Terms and Conditions</h3>
+        </div>
+        <div class="pdf-modal-header-actions">
+          <a href="assets/patient-data-consent-form.pdf" target="_blank" rel="noopener noreferrer" class="pdf-modal-external-link" title="Open in new tab" aria-label="Open in new tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+          <button type="button" id="btn-close-pdf-modal" class="pdf-modal-close" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="pdf-modal-body">
+        <iframe src="assets/patient-data-consent-form.pdf" id="pdf-frame" class="pdf-viewer-frame" title="Terms and Conditions"></iframe>
+      </div>
+      <div class="pdf-modal-footer">
+        <button type="button" id="btn-close-pdf-modal-footer" class="neu-btn" data-i18n="pdf_modal_close">Close & Return to Sign Up</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency SOS Confirmation Modal -->
+  <div id="sos-confirm-modal" class="pdf-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sos-modal-title">
+    <div class="pdf-modal-card sos-modal-card">
+      <div class="sos-modal-header">
+        <div class="sos-modal-header-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <h3 id="sos-modal-title" data-i18n="sos_confirm_title">Emergency SOS Alert</h3>
+        </div>
+        <button type="button" id="btn-close-sos-modal" class="pdf-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="sos-modal-body">
+        <p class="sos-modal-lead" data-i18n="sos_confirm_body">Are you sure you want to trigger an Emergency SOS? This will immediately alert your assigned doctor and book an urgent emergency appointment.</p>
+        <div class="sos-modal-warning">
+          <strong>&#9888; Note:</strong> An urgent emergency notification will be transmitted directly to the on-duty hospital clinical staff.
+        </div>
+      </div>
+      <div class="sos-modal-footer">
+        <button type="button" id="btn-cancel-sos" class="neu-btn" data-i18n="btn_sos_cancel">Cancel</button>
+        <button type="button" id="btn-confirm-sos" class="btn-sos-confirm" data-i18n="btn_sos_confirm">Send SOS Immediately</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency SOS Success Confirmation Modal -->
+  <div id="sos-success-modal" class="pdf-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sos-success-title">
+    <div class="pdf-modal-card sos-modal-card">
+      <div class="sos-modal-header sos-header-success">
+        <div class="sos-modal-header-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <h3 id="sos-success-title" data-i18n="sos_success_title">Emergency SOS Dispatched!</h3>
+        </div>
+        <button type="button" id="btn-close-sos-success" class="pdf-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="sos-modal-body" id="sos-success-body-content">
+        <p class="sos-modal-lead" data-i18n="sos_success_body">Your assigned doctor has been notified with high priority and an emergency appointment is confirmed.</p>
+        <div id="sos-appointment-summary" class="sos-appointment-summary"></div>
+      </div>
+      <div class="sos-modal-footer">
+        <button type="button" id="btn-done-sos-success" class="btn-primary">Acknowledge & Close</button>
       </div>
     </div>
   </div>

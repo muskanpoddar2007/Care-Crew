@@ -20,10 +20,16 @@ class AppointmentStatus(str, Enum):
 class Appointment(BaseModel):
     id: str
     patient_id: str
+    patient_name: Optional[str] = None
+    doctor_id: Optional[str] = None
+    doctor_name: Optional[str] = None
     department: str
     preferred_date: Optional[str] = None
     note: Optional[str] = None
     urgent: bool = False
+    type: str = "standard"  # "standard" | "sos"
+    is_sos: bool = False
+    case_sheet_id: Optional[str] = None
     status: AppointmentStatus = AppointmentStatus.requested
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -33,6 +39,11 @@ class AppointmentCreate(BaseModel):
     preferred_date: Optional[str] = None
     note: Optional[str] = None
     urgent: bool = False
+    doctor_id: Optional[str] = None
+    doctor_name: Optional[str] = None
+    case_sheet_id: Optional[str] = None
+    type: str = "standard"
+    is_sos: bool = False
 
 
 appointment_store = KeyValueStore("appointment", Appointment)

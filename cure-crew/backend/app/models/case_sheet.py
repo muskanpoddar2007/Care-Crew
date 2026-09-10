@@ -68,7 +68,20 @@ class CaseSheet(BaseModel):
     retry_counts: dict[str, int] = PydField(default_factory=dict)  # per-slot miss counter for re-asks
     completed_at: Optional[datetime] = None  # set once is_complete flips true — used to sort Reports
 
+    # --- Dual-Mode Consultation & Quick-Reply State (additive) ---
+    language: Optional[str] = None          # "english" | "hindi" | "hinglish"
+    mode: Optional[str] = None              # "ayurveda" | "allopathic"
+    category: Optional[str] = None          # e.g. "cardiac-pattern", "gastric", "joint_muscle", "digestive"
+    stage: str = "language_select"          # "language_select" | "mode_select" | "chief_complaint" | "core_intake" | "branching" | "closing"
+    mcq_questions_asked: int = 0            # counter for quick-reply MCQ questions (must reach >= 4)
+    ayurveda_core_collected: bool = False   # True once Agni, Sleep, and Thermal preference are collected
+    collected_fields: dict = PydField(default_factory=dict)  # answers keyed by question slot/type
+    initial_patient_text: Optional[str] = None  # symptom text if patient typed before selecting language/mode
+    pending_options: Optional[list[str]] = None  # current turn's MCQ quick-reply options
+    asked_question_type: Optional[str] = None
+
     def missing_hopi_slots(self) -> list[str]:
         """Kaunse HOPI slots abhi khaali hain — slot-filling loop isko use karta hai."""
         return [name for name, ev in self.hopi.model_dump().items()
                 if ev.get("value") in (None, "")]
+

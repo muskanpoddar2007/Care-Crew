@@ -625,3 +625,445 @@
     text-align: center;
   }
 }
+
+/* ===== SOS Emergency Button (Top Nav) ===== */
+.btn-sos {
+  background: #dc2626;
+  color: #ffffff;
+  border: 2px solid #ef4444;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.94rem;
+  letter-spacing: 0.08em;
+  padding: 7px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  animation: sosPulse 2.5s infinite;
+}
+
+.btn-sos:hover {
+  background: #b91c1c;
+  transform: scale(1.04);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.6);
+}
+
+.btn-sos:active {
+  transform: scale(0.97);
+}
+
+@keyframes sosPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+/* User chip avatar upload cursor */
+.user-chip-avatar {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-chip-avatar:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* ===== Emergency Numbers Footer (Patient Dashboard) ===== */
+.emergency-numbers-section {
+  margin-top: 40px;
+  margin-bottom: 24px;
+}
+
+.emergency-numbers-band {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-soft);
+}
+
+.emergency-band-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.emergency-band-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emergency-band-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.emergency-band-subtitle {
+  margin: 3px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.emergency-numbers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.emergency-number-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.emergency-number-card:hover {
+  transform: translateY(-3px);
+  border-color: #dc2626;
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.15);
+}
+
+.emergency-number-code {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #dc2626;
+  letter-spacing: 0.02em;
+}
+
+.emergency-number-label {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+/* ===== Doctor Emergency SOS Alert Banner ===== */
+.doctor-sos-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 2px solid #dc2626;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  animation: sosBannerGlow 3s infinite;
+}
+
+@keyframes sosBannerGlow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(220, 38, 38, 0.45);
+  }
+}
+
+.doctor-sos-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.doctor-sos-pulsing-dot {
+  width: 14px;
+  height: 14px;
+  background: #dc2626;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #dc2626;
+  flex-shrink: 0;
+  animation: sosPulse 1.5s infinite;
+}
+
+.doctor-sos-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.doctor-sos-desc {
+  margin: 3px 0 0;
+  font-size: 0.86rem;
+  color: var(--color-text);
+}
+
+.btn-sos-review {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.btn-sos-review:hover {
+  background: #b91c1c;
+}
+
+/* Urgent SOS Tag on Doctor Appointment List */
+.urgent-sos-tag {
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+/* ===== SOS Modals ===== */
+.sos-modal-card {
+  max-width: 520px;
+  height: auto;
+  max-height: 90vh;
+}
+
+.sos-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sos-modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sos-modal-header-title h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.sos-header-success .sos-modal-header-title h3 {
+  color: #16a34a;
+}
+
+.sos-modal-body {
+  padding: 24px;
+}
+
+.sos-modal-lead {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin: 0 0 16px;
+}
+
+.sos-modal-warning {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.sos-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.btn-sos-confirm {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-sos-confirm:hover {
+  background: #b91c1c;
+}
+
+.sos-appointment-summary {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ===== My Doctors Page ===== */
+.doctors-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.doctor-assigned-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doctor-assigned-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.doctor-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.doctor-card-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-bg-alt);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.doctor-card-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+}
+
+.doctor-card-specialty {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.doctor-card-details {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 12px;
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.doctor-card-details strong {
+  color: var(--color-text);
+}
+
+.doctor-card-actions {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.doctor-call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--neu-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 0.86rem;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.doctor-call-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border-color: var(--color-accent);
+}
+
+/* ===== Booking Locked State (Single Booking per Session) ===== */
+.booking-locked-banner {
+  background: rgba(27, 156, 151, 0.1);
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  margin-bottom: 24px;
+}
+
+.booking-locked-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+}
+
+.booking-locked-desc {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.booking-locked-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}

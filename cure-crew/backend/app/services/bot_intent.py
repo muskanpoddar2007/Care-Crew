@@ -7,9 +7,6 @@ module answers a completely different question: "what does the user want the
 APP to do" for the floating assistant widget — navigate somewhere, get a
 
 last-visit summary, chat naturally, or explain what Care Crew does. It never
-=======
-last-visit summary, chat naturally, or explain what CareCrew does. It never
->>>>>>> 47f392c (All the changes)
 touches case-taking state and is never used by the Symptom Check flow.
 
 Design:

@@ -37,9 +37,9 @@ _ACTION_PATTERNS = [
         "target": "reports",
         "label": "View Reports",
         "keywords": [
-            "show my reports", "show reports", "report dikhao", "reports dikhao",
-            "mera report", "purani report", "previous report", "old reports",
-            "diagnosis report", "report chahiye",
+            "show my reports", "show reports", "view reports", "report dikhao", "reports dikhao",
+            "mera report dikhao", "purani report dikhao", "purani reports dikhao", "old reports dikhao",
+            "diagnosis report", "report chahiye", "reports dekhna", "reports dekhni",
         ],
     },
     {
