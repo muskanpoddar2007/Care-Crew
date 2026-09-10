@@ -388,8 +388,7 @@
             <div class="dashboard-section">
               <h3 class="dashboard-section-title" data-i18n="quick_actions_title">Quick Actions</h3>
               <div class="quick-actions">
-                <button type="button" id="start-case-btn" class="btn-primary btn-inline" data-i18n="nav_symptom_check">Start Symptom Check</button>
-                <button type="button" id="go-appointments-btn" class="neu-btn" data-i18n="nav_appointment">Book Appointment</button>
+                <button type="button" id="start-case-btn" class="btn-primary btn-inline" data-i18n="nav_symptom_check">Symptom Check & Book Appointment</button>
                 <button type="button" id="go-reports-btn" class="neu-btn" data-i18n="nav_case_sheet">Case Sheet</button>
               </div>
             </div>
@@ -446,88 +445,158 @@
           <div id="profile-id-card" class="id-card-wrap"></div>
         </section>
 
-        <!-- Case-taking chat (Symptom Check entry point — becomes a form in Phase 3) -->
+        <!-- Symptom Check & Book Appointment connected workflow -->
         <section id="view-chat" class="view hidden">
-          <button type="button" id="chat-back" class="back-link">&larr; Back to dashboard</button>
-
-          <div id="urgent-banner" class="urgent-banner hidden" role="alert">
-            <span class="urgent-banner-icon" aria-hidden="true">⚠️</span>
-            <div>
-              <strong>RED FLAG — this may need urgent attention</strong>
-              <ul id="urgent-banner-flags"></ul>
-            </div>
-          </div>
-
-          <div class="chat-layout">
-            <div class="chat-panel flat-card">
-              <div id="chat-messages" class="chat-messages"></div>
-
-              <form id="chat-form" class="chat-input-row">
-                <input type="text" id="chat-input" placeholder="Type your answer..." autocomplete="off" />
-                <button type="submit" id="chat-send" class="btn-primary btn-inline">Send</button>
-              </form>
-              <div id="chat-error" class="form-error hidden"></div>
-            </div>
-
-            <aside class="casesheet-panel flat-card">
-              <h3>Case Sheet</h3>
-              <div id="casesheet-live" class="casesheet-body"></div>
-            </aside>
-          </div>
-
-          <div id="chat-final" class="flat-card hidden">
-            <h3>Final Case Summary</h3>
-            <div id="casesheet-final" class="casesheet-body"></div>
-          </div>
-
-          <div id="chat-summary" class="flat-card hidden">
-            <div class="summary-header">
-              <h3>AI Summary</h3>
-              <div class="summary-toggle">
-                <button type="button" id="chat-summary-patient" class="neu-btn active">Patient-friendly</button>
-                <button type="button" id="chat-summary-doctor" class="neu-btn">Doctor-friendly</button>
+          <div class="workflow-header">
+            <button type="button" id="chat-back" class="back-link">&larr; Back to dashboard</button>
+            <div class="workflow-stepper" id="workflow-stepper" aria-label="Progress">
+              <div class="step-item active" id="stepper-step-1" data-step="1">
+                <span class="step-num">1</span>
+                <span class="step-label" data-i18n="workflow_step_1">Symptom Check</span>
               </div>
-              <button type="button" id="chat-summary-close" class="btn-link">Close</button>
+              <div class="step-divider"></div>
+              <div class="step-item" id="stepper-step-2" data-step="2">
+                <span class="step-num">2</span>
+                <span class="step-label" data-i18n="workflow_step_2">Review Case Sheet</span>
+              </div>
+              <div class="step-divider"></div>
+              <div class="step-item" id="stepper-step-3" data-step="3">
+                <span class="step-num">3</span>
+                <span class="step-label" data-i18n="workflow_step_3">Book Appointment</span>
+              </div>
             </div>
-            <pre id="chat-summary-body" class="summary-body"></pre>
+          </div>
+
+          <!-- Step 1: Symptom Check Conversation -->
+          <div id="workflow-stage-1" class="workflow-stage">
+            <div id="urgent-banner" class="urgent-banner hidden" role="alert">
+              <span class="urgent-banner-icon" aria-hidden="true">⚠️</span>
+              <div>
+                <strong>RED FLAG — this may need urgent attention</strong>
+                <ul id="urgent-banner-flags"></ul>
+              </div>
+            </div>
+
+            <div class="chat-layout">
+              <div class="chat-panel flat-card">
+                <div id="chat-messages" class="chat-messages"></div>
+
+                <form id="chat-form" class="chat-input-row">
+                  <input type="text" id="chat-input" placeholder="Type your answer..." autocomplete="off" />
+                  <button type="submit" id="chat-send" class="btn-primary btn-inline">Send</button>
+                </form>
+                <div id="chat-error" class="form-error hidden"></div>
+              </div>
+
+              <aside class="casesheet-panel flat-card">
+                <h3>Case Sheet</h3>
+                <div id="casesheet-live" class="casesheet-body"></div>
+              </aside>
+            </div>
+          </div>
+
+          <!-- Step 2: Review Case Sheet & AI Summary -->
+          <div id="workflow-stage-2" class="workflow-stage hidden">
+            <div class="workflow-transition-banner flat-card">
+              <div class="transition-badge">✓</div>
+              <div class="transition-text">
+                <h2 class="transition-title" data-i18n="workflow_transition_title">Your symptom check is complete.</h2>
+                <p class="transition-subtitle" data-i18n="workflow_transition_subtitle">Your case information has been prepared for your doctor. Now choose an appointment time.</p>
+                <div id="casesheet-triage-badge" class="triage-info-badge hidden"></div>
+              </div>
+            </div>
+
+            <div class="casesheet-review-actions-top">
+              <button type="button" id="btn-back-to-chat" class="back-link" data-i18n="btn_back_to_chat">&larr; Back to Symptom Check</button>
+              <button type="button" id="btn-continue-to-booking" class="btn-primary btn-inline" data-i18n="btn_continue_to_booking">Continue to Book Appointment &rarr;</button>
+            </div>
+
+            <div id="chat-final" class="flat-card">
+              <h3>Case Sheet</h3>
+              <div id="casesheet-final" class="casesheet-body"></div>
+            </div>
+
+            <div id="chat-summary" class="flat-card">
+              <div class="summary-header">
+                <h3>AI Summary</h3>
+                <div class="summary-toggle">
+                  <button type="button" id="chat-summary-patient" class="neu-btn active">Patient-friendly</button>
+                  <button type="button" id="chat-summary-doctor" class="neu-btn">Doctor-friendly</button>
+                </div>
+              </div>
+              <pre id="chat-summary-body" class="summary-body"></pre>
+            </div>
+
+            <div class="casesheet-review-actions-bottom">
+              <button type="button" id="btn-continue-to-booking-bottom" class="btn-primary btn-large" data-i18n="btn_continue_to_booking">Continue to Book Appointment &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Book Appointment -->
+          <div id="workflow-stage-3" class="workflow-stage hidden">
+            <button type="button" id="btn-back-to-casesheet" class="back-link" data-i18n="btn_back_to_casesheet">&larr; Back to Case Sheet</button>
+
+            <div class="workflow-appointment-recap flat-card">
+              <span class="recap-label">Prepared for Doctor:</span>
+              <div id="booking-recap-details" class="recap-details"></div>
+            </div>
+
+            <div class="flat-card">
+              <h2>Book Appointment</h2>
+              <p class="booking-guide-text">Select your preferred date and department. Your structured case sheet will be automatically handed to your doctor.</p>
+              <div id="appointments-error" class="form-error hidden"></div>
+              <form id="appointment-form">
+                <div class="field">
+                  <label for="appt-department">Department</label>
+                  <select id="appt-department">
+                    <option value="General Medicine">General Medicine</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Gastroenterology">Gastroenterology</option>
+                    <option value="Pulmonology">Pulmonology</option>
+                    <option value="ENT">ENT</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="Dermatology">Dermatology</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="appt-date">Preferred date</label>
+                  <input type="date" id="appt-date" />
+                </div>
+                <div class="field">
+                  <label for="appt-note">Note (optional)</label>
+                  <input type="text" id="appt-note" placeholder="Anything the doctor should know" />
+                </div>
+                <label class="checkbox-row"><input type="checkbox" id="appt-urgent" /> This feels urgent</label>
+                <button type="submit" id="appt-submit" class="btn-primary">Request Appointment</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Step 4: Appointment Confirmation -->
+          <div id="workflow-stage-confirmation" class="workflow-stage hidden">
+            <div class="confirmation-card flat-card">
+              <div class="confirmation-icon">&#10003;</div>
+              <h2 data-i18n="appointment_confirmed_title">Appointment Confirmed!</h2>
+              <p class="confirmation-desc" data-i18n="appointment_confirmed_subtitle">Your case sheet has been attached and will be reviewed by your doctor before your visit.</p>
+
+              <div id="confirmation-details" class="confirmation-details"></div>
+
+              <div class="confirmation-actions">
+                <button type="button" id="btn-confirmation-dashboard" class="btn-primary btn-inline">Go to Dashboard</button>
+                <button type="button" id="btn-confirmation-appointments" class="neu-btn btn-inline">View My Appointments</button>
+                <button type="button" id="btn-confirmation-restart" class="btn-link">Start New Symptom Check</button>
+              </div>
+            </div>
           </div>
         </section>
 
-        <!-- Appointment booking -->
+        <!-- Appointment list (My Appointments view) -->
         <section id="view-appointments" class="view hidden">
           <button type="button" id="appointments-back" class="back-link">&larr; Back to dashboard</button>
 
           <div class="flat-card">
-            <h2>Book Appointment</h2>
-            <div id="appointments-error" class="form-error hidden"></div>
-            <form id="appointment-form">
-              <div class="field">
-                <label for="appt-department">Department</label>
-                <select id="appt-department">
-                  <option value="General Medicine">General Medicine</option>
-                  <option value="Cardiology">Cardiology</option>
-                  <option value="Gastroenterology">Gastroenterology</option>
-                  <option value="Pulmonology">Pulmonology</option>
-                  <option value="ENT">ENT</option>
-                  <option value="Orthopedics">Orthopedics</option>
-                  <option value="Dermatology">Dermatology</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="appt-date">Preferred date</label>
-                <input type="date" id="appt-date" />
-              </div>
-              <div class="field">
-                <label for="appt-note">Note (optional)</label>
-                <input type="text" id="appt-note" placeholder="Anything the doctor should know" />
-              </div>
-              <label class="checkbox-row"><input type="checkbox" id="appt-urgent" /> This feels urgent</label>
-              <button type="submit" id="appt-submit" class="btn-primary">Request Appointment</button>
-            </form>
-          </div>
-
-          <div class="flat-card">
-            <h3>My Appointments</h3>
+            <h2>My Appointments</h2>
+            <p class="booking-guide-text">Need to book a new appointment? Complete a <button type="button" id="link-start-symptom-check" class="btn-link" style="display:inline;padding:0;font-weight:600;">Symptom Check</button> so your doctor has your full history.</p>
             <div id="appointments-list" class="list-body"></div>
           </div>
         </section>

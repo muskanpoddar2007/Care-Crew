@@ -342,3 +342,286 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Symptom Check & Book Appointment Connected Workflow ---------- */
+.workflow-header {
+  margin-bottom: 24px;
+}
+
+.workflow-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  margin-top: 14px;
+  box-shadow: 0 2px 10px rgba(15, 42, 74, 0.04);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.55;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  cursor: default;
+}
+
+.step-item.active {
+  opacity: 1;
+  font-weight: 700;
+}
+
+.step-item.completed {
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.step-item.active .step-num {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: 0 2px 8px rgba(27, 156, 151, 0.35);
+}
+
+.step-item.completed .step-num {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.step-label {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.step-divider {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 14px;
+  min-width: 16px;
+}
+
+.step-divider.completed {
+  background: var(--color-accent);
+}
+
+.workflow-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Step 2 Transition Banner */
+.workflow-transition-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(27, 156, 151, 0.08) 0%, rgba(27, 156, 151, 0.02) 100%);
+  border: 1px solid rgba(27, 156, 151, 0.25);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+}
+
+.transition-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.transition-title {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  color: var(--color-primary);
+}
+
+.transition-subtitle {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.triage-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.casesheet-review-actions-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.casesheet-review-actions-bottom {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 10px;
+}
+
+.btn-large {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 14px rgba(27, 156, 151, 0.28);
+}
+
+/* Step 3 Recap Card */
+.workflow-appointment-recap {
+  padding: 16px 20px;
+  border-left: 4px solid var(--color-accent);
+}
+
+.recap-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.recap-details {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.booking-guide-text {
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Step 4 Confirmation Card */
+.confirmation-card {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.confirmation-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  box-shadow: 0 6px 18px rgba(27, 156, 151, 0.35);
+}
+
+.confirmation-card h2 {
+  margin: 0 0 8px;
+  color: var(--color-primary);
+  font-size: 1.4rem;
+}
+
+.confirmation-desc {
+  color: var(--color-text-muted);
+  font-size: 0.96rem;
+  max-width: 480px;
+  margin: 0 auto 24px;
+  line-height: 1.5;
+}
+
+.confirmation-details {
+  max-width: 460px;
+  margin: 0 auto 28px;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.confirmation-details .detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.confirmation-details .detail-row:last-child {
+  border-bottom: none;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Sidebar multiline support */
+.sidebar-item {
+  line-height: 1.35;
+}
+
+@media (max-width: 768px) {
+  .workflow-stepper {
+    padding: 10px 14px;
+  }
+  .step-label {
+    display: none;
+  }
+  .step-item.active .step-label {
+    display: inline;
+    font-size: 0.82rem;
+  }
+  .step-divider {
+    margin: 0 8px;
+  }
+  .casesheet-review-actions-top {
+    flex-direction: column-reverse;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .casesheet-review-actions-top button {
+    text-align: center;
+  }
+}

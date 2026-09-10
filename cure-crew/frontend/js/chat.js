@@ -51,11 +51,18 @@
     )
   );
 
+  const STORAGE_KEY = "carecrew_workflow_state";
+
   const els = {};
   let sessionId = null;
   let currentSlot = null;
   let lastDepartment = null;
   let lastConditionKey = null;
+  let isUrgent = false;
+  let isComplete = false;
+  let finalSheetData = null;
+  let currentStep = 1;
+  let chatTranscript = [];
   let busy = false;
 
   function humanizeKey(key) {
@@ -63,6 +70,17 @@
   }
 
   function cacheEls() {
+    // Stepper & Stages
+    els.stepper = document.getElementById("workflow-stepper");
+    els.step1 = document.getElementById("stepper-step-1");
+    els.step2 = document.getElementById("stepper-step-2");
+    els.step3 = document.getElementById("stepper-step-3");
+    els.stage1 = document.getElementById("workflow-stage-1");
+    els.stage2 = document.getElementById("workflow-stage-2");
+    els.stage3 = document.getElementById("workflow-stage-3");
+    els.stageConfirmation = document.getElementById("workflow-stage-confirmation");
+
+    // Stage 1 (Chat)
     els.banner = document.getElementById("urgent-banner");
     els.bannerFlags = document.getElementById("urgent-banner-flags");
     els.messages = document.getElementById("chat-messages");
@@ -71,21 +89,208 @@
     els.send = document.getElementById("chat-send");
     els.error = document.getElementById("chat-error");
     els.live = document.getElementById("casesheet-live");
+
+    // Stage 2 (Case Sheet Review)
+    els.triageBadge = document.getElementById("casesheet-triage-badge");
+    els.btnBackToChat = document.getElementById("btn-back-to-chat");
+    els.btnContinueToBooking = document.getElementById("btn-continue-to-booking");
+    els.btnContinueToBookingBottom = document.getElementById("btn-continue-to-booking-bottom");
     els.finalWrap = document.getElementById("chat-final");
     els.finalBody = document.getElementById("casesheet-final");
     els.summaryPanel = document.getElementById("chat-summary");
     els.summaryBody = document.getElementById("chat-summary-body");
-    els.summaryClose = document.getElementById("chat-summary-close");
     els.summaryPatientBtn = document.getElementById("chat-summary-patient");
     els.summaryDoctorBtn = document.getElementById("chat-summary-doctor");
+
+    // Stage 3 (Booking)
+    els.btnBackToCasesheet = document.getElementById("btn-back-to-casesheet");
+    els.bookingRecap = document.getElementById("booking-recap-details");
+    els.appointmentForm = document.getElementById("appointment-form");
+    els.appointmentsError = document.getElementById("appointments-error");
+    els.apptDepartment = document.getElementById("appt-department");
+    els.apptDate = document.getElementById("appt-date");
+    els.apptNote = document.getElementById("appt-note");
+    els.apptUrgent = document.getElementById("appt-urgent");
+    els.apptSubmit = document.getElementById("appt-submit");
+
+    // Stage 4 (Confirmation)
+    els.confirmationDetails = document.getElementById("confirmation-details");
+    els.btnConfirmationDashboard = document.getElementById("btn-confirmation-dashboard");
+    els.btnConfirmationAppointments = document.getElementById("btn-confirmation-appointments");
+    els.btnConfirmationRestart = document.getElementById("btn-confirmation-restart");
   }
 
+  // ---------- Workflow State Storage ----------
+  function saveWorkflowState() {
+    try {
+      const state = {
+        sessionId,
+        currentStep,
+        currentSlot,
+        lastDepartment,
+        lastConditionKey,
+        isUrgent,
+        isComplete,
+        finalSheetData,
+        chatTranscript,
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      // Storage quota or disabled
+    }
+  }
+
+  function loadWorkflowState() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function clearWorkflowState() {
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  // ---------- Stepper & Stage Switching ----------
+  function updateStepperUI(step) {
+    if (!els.step1 || !els.step2 || !els.step3) return;
+
+    [els.step1, els.step2, els.step3].forEach((el) => {
+      el.classList.remove("active", "completed");
+    });
+
+    const dividers = els.stepper ? els.stepper.querySelectorAll(".step-divider") : [];
+    dividers.forEach((d) => d.classList.remove("completed"));
+
+    if (step === 1) {
+      els.step1.classList.add("active");
+    } else if (step === 2) {
+      els.step1.classList.add("completed");
+      els.step2.classList.add("active");
+      if (dividers[0]) dividers[0].classList.add("completed");
+    } else if (step === 3) {
+      els.step1.classList.add("completed");
+      els.step2.classList.add("completed");
+      els.step3.classList.add("active");
+      dividers.forEach((d) => d.classList.add("completed"));
+    } else if (step >= 4) {
+      els.step1.classList.add("completed");
+      els.step2.classList.add("completed");
+      els.step3.classList.add("completed");
+      dividers.forEach((d) => d.classList.add("completed"));
+    }
+  }
+
+  function goToStep(step) {
+    cacheEls();
+
+    // Guard: Patient cannot enter Case Sheet (Step 2) or Booking (Step 3) without finishing Symptom Check
+    if (step > 1 && !isComplete) {
+      step = 1;
+    }
+
+    currentStep = step;
+    updateStepperUI(step);
+
+    if (els.stage1) els.stage1.classList.toggle("hidden", step !== 1);
+    if (els.stage2) els.stage2.classList.toggle("hidden", step !== 2);
+    if (els.stage3) els.stage3.classList.toggle("hidden", step !== 3);
+    if (els.stageConfirmation) els.stageConfirmation.classList.toggle("hidden", step !== 4);
+
+    if (step === 2) {
+      setupStep2View();
+    } else if (step === 3) {
+      setupStep3View();
+    }
+
+    saveWorkflowState();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function setupStep2View() {
+    if (finalSheetData && els.finalBody) {
+      renderCaseSheet(els.finalBody, finalSheetData);
+    }
+    if (lastDepartment && els.triageBadge) {
+      els.triageBadge.textContent = `Identified Department: ${lastDepartment}`;
+      els.triageBadge.classList.remove("hidden");
+    } else if (els.triageBadge) {
+      els.triageBadge.classList.add("hidden");
+    }
+    if (sessionId) {
+      loadSummary("patient");
+    }
+  }
+
+  function setupStep3View() {
+    if (els.bookingRecap) {
+      const complaintText =
+        (finalSheetData && finalSheetData.chief_complaint && finalSheetData.chief_complaint.value) ||
+        (lastConditionKey ? humanizeKey(lastConditionKey) : "Symptom Assessment");
+      const deptText = lastDepartment || "General Medicine";
+      els.bookingRecap.innerHTML = `<strong>${complaintText}</strong> &middot; Routed to <strong>${deptText}</strong>${
+        isUrgent ? ' &middot; <span class="role-badge urgent">Urgent</span>' : ""
+      }`;
+    }
+
+    if (els.apptDepartment && lastDepartment) {
+      const options = Array.from(els.apptDepartment.options).map((o) => o.value);
+      if (options.includes(lastDepartment)) {
+        els.apptDepartment.value = lastDepartment;
+      }
+    }
+
+    if (els.apptUrgent) {
+      els.apptUrgent.checked = isUrgent;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (els.apptDate) {
+      els.apptDate.min = today;
+      if (!els.apptDate.value) els.apptDate.value = today;
+    }
+  }
+
+  function showConfirmation(appt) {
+    cacheEls();
+    isComplete = true;
+    if (els.confirmationDetails) {
+      els.confirmationDetails.innerHTML = "";
+      const rows = [
+        ["Department", appt.department || lastDepartment || "General Medicine"],
+        ["Preferred Date", appt.preferred_date || "Earliest available"],
+        ["Priority", appt.urgent || isUrgent ? "Urgent Priority" : "Standard OPD"],
+        ["Status", appt.status || "Requested"],
+        ["Case Sheet Ref", sessionId ? `Session #${sessionId}` : "Attached & Linked"],
+      ];
+
+      rows.forEach(([k, v]) => {
+        const row = document.createElement("div");
+        row.className = "detail-row";
+        const keySpan = document.createElement("strong");
+        keySpan.textContent = k;
+        const valSpan = document.createElement("span");
+        valSpan.textContent = v;
+        row.appendChild(keySpan);
+        row.appendChild(valSpan);
+        els.confirmationDetails.appendChild(row);
+      });
+    }
+
+    goToStep(4);
+  }
+
+  // ---------- Message Rendering ----------
   function addMessage(role, text) {
     const bubble = document.createElement("div");
     bubble.className = `chat-bubble chat-bubble-${role}`;
     bubble.textContent = text;
     els.messages.appendChild(bubble);
     els.messages.scrollTop = els.messages.scrollHeight;
+    chatTranscript.push({ role, text });
+    saveWorkflowState();
     return bubble;
   }
 
@@ -107,17 +312,24 @@
       openSummary();
       return;
     }
+    if (action.target === "appointments") {
+      if (isComplete) {
+        goToStep(3);
+        return;
+      }
+    }
     window.CareCrewNav.goTo(action.target, { department: lastDepartment, conditionKey: lastConditionKey });
   }
 
   async function openSummary() {
-    els.summaryPanel.classList.remove("hidden");
+    if (els.summaryPanel) els.summaryPanel.classList.remove("hidden");
     await loadSummary("patient");
   }
 
   async function loadSummary(audience) {
-    els.summaryPatientBtn.classList.toggle("active", audience === "patient");
-    els.summaryDoctorBtn.classList.toggle("active", audience === "doctor");
+    if (!els.summaryBody || !sessionId) return;
+    if (els.summaryPatientBtn) els.summaryPatientBtn.classList.toggle("active", audience === "patient");
+    if (els.summaryDoctorBtn) els.summaryDoctorBtn.classList.toggle("active", audience === "doctor");
     els.summaryBody.textContent = "Generating summary...";
     try {
       const res = await CareCrewAPI.getSessionSummary(sessionId, audience);
@@ -160,6 +372,7 @@
   }
 
   function renderCaseSheet(container, data) {
+    if (!container) return;
     container.innerHTML = "";
     let any = false;
 
@@ -191,9 +404,7 @@
       }
     });
 
-    // Additional Details — ROS fields introduced by a new tree, or by the
-    // dynamic no-tree fallback, that SLOT_GROUPS doesn't already cover.
-    const ros = data.review_of_systems || {};
+    const ros = (data && data.review_of_systems) || {};
     const extraKeys = Object.keys(ros).filter((k) => !KNOWN_ROS_KEYS.has(k));
     if (extraKeys.length) {
       const groupEl = document.createElement("div");
@@ -230,54 +441,65 @@
     }
   }
 
-  function updateBanner(isUrgent, redFlags) {
+  function updateBanner(urgent, redFlags) {
+    isUrgent = Boolean(urgent);
+    if (!els.banner) return;
     if (!isUrgent) {
       els.banner.classList.add("hidden");
       return;
     }
-    els.bannerFlags.innerHTML = "";
-    (redFlags || []).forEach((flag) => {
-      const li = document.createElement("li");
-      li.textContent = flag;
-      els.bannerFlags.appendChild(li);
-    });
+    if (els.bannerFlags) {
+      els.bannerFlags.innerHTML = "";
+      (redFlags || []).forEach((flag) => {
+        const li = document.createElement("li");
+        li.textContent = typeof flag === "string" ? flag : flag.text || JSON.stringify(flag);
+        els.bannerFlags.appendChild(li);
+      });
+    }
     els.banner.classList.remove("hidden");
   }
 
   function showError(message) {
+    if (!els.error) return;
     els.error.textContent = message;
     els.error.classList.remove("hidden");
   }
 
   function clearError() {
-    els.error.classList.add("hidden");
+    if (els.error) els.error.classList.add("hidden");
   }
 
   function setBusy(state) {
     busy = state;
-    els.input.disabled = state;
-    els.send.disabled = state;
+    if (els.input) els.input.disabled = state;
+    if (els.send) els.send.disabled = state;
   }
 
   function resetUI() {
-    els.messages.innerHTML = "";
-    els.live.innerHTML = "";
-    els.finalBody.innerHTML = "";
-    els.finalWrap.classList.add("hidden");
-    els.banner.classList.add("hidden");
-    els.summaryPanel.classList.add("hidden");
-    clearError();
-    els.form.classList.remove("hidden");
+    cacheEls();
+    if (els.messages) els.messages.innerHTML = "";
+    if (els.live) els.live.innerHTML = "";
+    if (els.finalBody) els.finalBody.innerHTML = "";
+    if (els.banner) els.banner.classList.add("hidden");
+    if (els.error) els.error.classList.add("hidden");
+    if (els.form) els.form.classList.remove("hidden");
     renderCaseSheet(els.live, {});
   }
 
   async function start() {
     cacheEls();
     resetUI();
+    clearWorkflowState();
     sessionId = null;
     currentSlot = null;
     lastDepartment = null;
     lastConditionKey = null;
+    isUrgent = false;
+    isComplete = false;
+    finalSheetData = null;
+    chatTranscript = [];
+    currentStep = 1;
+    goToStep(1);
 
     setBusy(true);
     try {
@@ -287,20 +509,26 @@
       currentSlot = res.next_slot;
       addMessage("agent", res.next_question);
       updateBanner(res.is_urgent, []);
+      saveWorkflowState();
     } catch (err) {
       showError(err.message);
     } finally {
       setBusy(false);
-      els.input.focus();
+      if (els.input) els.input.focus();
     }
   }
 
   async function finish() {
     try {
+      isComplete = true;
       const finalSheet = await CareCrewAPI.getFinalCaseSheet(sessionId);
-      renderCaseSheet(els.finalBody, finalSheet);
-      els.finalWrap.classList.remove("hidden");
-      els.form.classList.add("hidden");
+      finalSheetData = finalSheet;
+      if (finalSheet.department) lastDepartment = finalSheet.department;
+      if (finalSheet.is_urgent) isUrgent = true;
+
+      saveWorkflowState();
+      // Seamlessly advance to Step 2 (Review Case Sheet)
+      goToStep(2);
     } catch (err) {
       showError(err.message);
     }
@@ -325,39 +553,146 @@
       lastConditionKey = res.condition_key || lastConditionKey;
 
       if (res.is_complete) {
-        addMessage("agent", res.next_question || "Thank you — I have everything I need. Preparing your case summary...");
+        addMessage("agent", res.next_question || "Thank you — your clinical history is complete. Preparing your case sheet...");
         await finish();
       } else {
         addMessage("agent", res.next_question);
+        saveWorkflowState();
       }
 
       if (res.action) {
         addActionButton(res.action);
-      } else if (res.is_urgent) {
-        addActionButton({ action: "navigate", target: "appointments", label: "Book Urgent Appointment" });
       }
     } catch (err) {
       showError(err.message);
     } finally {
       setBusy(false);
-      if (!els.form.classList.contains("hidden")) els.input.focus();
+      if (els.input && currentStep === 1) els.input.focus();
     }
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function resumeOrStart() {
     cacheEls();
-    els.form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (busy) return;
-      const text = els.input.value.trim();
-      if (!text) return;
-      els.input.value = "";
-      submitAnswer(text);
-    });
-    els.summaryClose.addEventListener("click", () => els.summaryPanel.classList.add("hidden"));
-    els.summaryPatientBtn.addEventListener("click", () => loadSummary("patient"));
-    els.summaryDoctorBtn.addEventListener("click", () => loadSummary("doctor"));
-  });
+    const saved = loadWorkflowState();
+    if (saved && saved.sessionId) {
+      sessionId = saved.sessionId;
+      currentSlot = saved.currentSlot;
+      lastDepartment = saved.lastDepartment;
+      lastConditionKey = saved.lastConditionKey;
+      isUrgent = saved.isUrgent || false;
+      isComplete = saved.isComplete || false;
+      finalSheetData = saved.finalSheetData;
+      chatTranscript = saved.chatTranscript || [];
 
-  window.CareCrewChat = { start, renderCaseSheet };
+      // Restore transcript in Step 1
+      if (els.messages) {
+        els.messages.innerHTML = "";
+        chatTranscript.forEach((m) => {
+          const bubble = document.createElement("div");
+          bubble.className = `chat-bubble chat-bubble-${m.role}`;
+          bubble.textContent = m.text;
+          els.messages.appendChild(bubble);
+        });
+      }
+
+      if (finalSheetData) {
+        renderCaseSheet(els.live, finalSheetData);
+      }
+
+      // If user had reached Step 2 or Step 3, resume there
+      if (saved.currentStep >= 2 && isComplete) {
+        goToStep(saved.currentStep);
+        return;
+      }
+      goToStep(1);
+      return;
+    }
+    start();
+  }
+
+  function initListeners() {
+    cacheEls();
+
+    if (els.form) {
+      els.form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (busy) return;
+        const text = els.input.value.trim();
+        if (!text) return;
+        els.input.value = "";
+        submitAnswer(text);
+      });
+    }
+
+    // Stepper header item clicks for intuitive navigation
+    if (els.step1) {
+      els.step1.addEventListener("click", () => {
+        if (currentStep > 1) goToStep(1);
+      });
+    }
+    if (els.step2) {
+      els.step2.addEventListener("click", () => {
+        if (isComplete && currentStep !== 2) goToStep(2);
+      });
+    }
+    if (els.step3) {
+      els.step3.addEventListener("click", () => {
+        if (isComplete && currentStep !== 3) goToStep(3);
+      });
+    }
+
+    // Step 2 buttons
+    if (els.btnBackToChat) {
+      els.btnBackToChat.addEventListener("click", () => goToStep(1));
+    }
+    if (els.btnContinueToBooking) {
+      els.btnContinueToBooking.addEventListener("click", () => goToStep(3));
+    }
+    if (els.btnContinueToBookingBottom) {
+      els.btnContinueToBookingBottom.addEventListener("click", () => goToStep(3));
+    }
+
+    // Step 3 buttons
+    if (els.btnBackToCasesheet) {
+      els.btnBackToCasesheet.addEventListener("click", () => goToStep(2));
+    }
+
+    // Summary buttons
+    if (els.summaryPatientBtn) {
+      els.summaryPatientBtn.addEventListener("click", () => loadSummary("patient"));
+    }
+    if (els.summaryDoctorBtn) {
+      els.summaryDoctorBtn.addEventListener("click", () => loadSummary("doctor"));
+    }
+
+    // Confirmation buttons
+    if (els.btnConfirmationDashboard) {
+      els.btnConfirmationDashboard.addEventListener("click", () => {
+        window.CareCrewNav.goTo("dashboard");
+      });
+    }
+    if (els.btnConfirmationAppointments) {
+      els.btnConfirmationAppointments.addEventListener("click", () => {
+        window.CareCrewNav.goTo("appointments");
+      });
+    }
+    if (els.btnConfirmationRestart) {
+      els.btnConfirmationRestart.addEventListener("click", () => {
+        start();
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initListeners);
+
+  window.CareCrewChat = {
+    start,
+    resumeOrStart,
+    goToStep,
+    showConfirmation,
+    isWorkflowComplete() {
+      return Boolean(isComplete);
+    },
+    renderCaseSheet,
+  };
 })();

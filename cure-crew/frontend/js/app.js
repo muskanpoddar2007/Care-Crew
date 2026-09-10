@@ -127,9 +127,8 @@
   const SIDEBAR_ITEMS_BY_ROLE = {
     patient: [
       { key: "dashboard", label: "Home", icon: "dashboard", i18n: "nav_home" },
-      { key: "chat", label: "Start Symptom Check", icon: "symptom-check", i18n: "nav_symptom_check" },
+      { key: "chat", label: "Symptom Check & Book Appointment", icon: "symptom-check", i18n: "nav_symptom_check" },
       { key: "reports", label: "Case Sheet", icon: "reports", i18n: "nav_case_sheet" },
-      { key: "appointments", label: "Book Appointment", icon: "appointments", i18n: "nav_appointment" },
       {
         key: "diagnosis", label: "Diagnosis", icon: "diagnosis", i18n: "nav_diagnosis", group: true,
         children: [
@@ -275,7 +274,7 @@
       btn.addEventListener("click", () => {
         if (item.key === "chat") {
           showShellView("chat");
-          window.CareCrewChat.start();
+          window.CareCrewChat.resumeOrStart();
         } else if (item.key === "appointments") {
           openAppointments();
         } else if (item.key === "reports") {
@@ -661,14 +660,24 @@
     goTo(target, opts) {
       opts = opts || {};
       if (target === "appointments") {
-        openAppointments(opts.department);
+        const user = window.CareCrewSession.getUser();
+        if (user && user.role === "patient") {
+          showShellView("chat");
+          if (window.CareCrewChat && window.CareCrewChat.isWorkflowComplete && window.CareCrewChat.isWorkflowComplete()) {
+            window.CareCrewChat.goToStep(3);
+          } else {
+            window.CareCrewChat.resumeOrStart();
+          }
+        } else {
+          openAppointments(opts.department);
+        }
       } else if (target === "reports") {
         openReports();
       } else if (target === "doctor_appointments") {
         openDoctorAppointments();
       } else if (target === "chat") {
         showShellView("chat");
-        window.CareCrewChat.start();
+        window.CareCrewChat.resumeOrStart();
       } else if (target === "profile") {
         showShellView("profile");
       } else {
@@ -973,12 +982,14 @@
 
   els.startCaseBtn.addEventListener("click", () => {
     showShellView("chat");
-    window.CareCrewChat.start();
+    window.CareCrewChat.resumeOrStart();
   });
 
   els.chatBack.addEventListener("click", goToDashboardHome);
 
-  els.goAppointmentsBtn.addEventListener("click", () => openAppointments());
+  if (els.goAppointmentsBtn) {
+    els.goAppointmentsBtn.addEventListener("click", () => window.CareCrewNav.goTo("appointments"));
+  }
   els.goReportsBtn.addEventListener("click", () => openReports());
   els.appointmentsBack.addEventListener("click", goToDashboardHome);
   els.reportsBack.addEventListener("click", goToDashboardHome);
@@ -991,13 +1002,21 @@
   els.reportSummaryPatientBtn.addEventListener("click", () => loadReportSummary("patient"));
   els.reportSummaryDoctorBtn.addEventListener("click", () => loadReportSummary("doctor"));
 
+  const linkStartSymptom = document.getElementById("link-start-symptom-check");
+  if (linkStartSymptom) {
+    linkStartSymptom.addEventListener("click", () => {
+      showShellView("chat");
+      window.CareCrewChat.resumeOrStart();
+    });
+  }
+
   els.appointmentForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     els.appointmentsError.classList.add("hidden");
     els.apptSubmit.disabled = true;
     try {
       const token = window.CareCrewSession.getToken();
-      await CareCrewAPI.createAppointment(
+      const res = await CareCrewAPI.createAppointment(
         {
           department: els.apptDepartment.value,
           preferred_date: els.apptDate.value || null,
@@ -1009,6 +1028,10 @@
       els.apptNote.value = "";
       els.apptUrgent.checked = false;
       await loadAppointments();
+
+      if (window.CareCrewChat && window.CareCrewChat.showConfirmation) {
+        window.CareCrewChat.showConfirmation(res.data || res);
+      }
     } catch (err) {
       els.appointmentsError.textContent = err.message;
       els.appointmentsError.classList.remove("hidden");
